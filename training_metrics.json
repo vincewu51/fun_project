@@ -1,0 +1,33 @@
+{
+    "model": "AlexNet",
+    "dataset": "CIFAR-10",
+    "num_epochs": 5,
+    "batch_size": 128,
+    "learning_rate": 0.001,
+    "final_train_loss": 1.0220920416095374,
+    "final_train_accuracy": 64.076,
+    "final_val_accuracy": 66.3,
+    "training_time_seconds": 437.64986395835876,
+    "training_time_minutes": 7.29416439930598,
+    "train_losses": [
+        1.7425002807851337,
+        1.360659191065737,
+        1.214038830431526,
+        1.0986124269492792,
+        1.0220920416095374
+    ],
+    "train_accuracies": [
+        35.286,
+        50.564,
+        56.476,
+        61.128,
+        64.076
+    ],
+    "val_accuracies": [
+        47.87,
+        53.05,
+        59.33,
+        63.11,
+        66.3
+    ]
+}
