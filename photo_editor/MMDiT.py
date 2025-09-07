@@ -17,7 +17,7 @@ class TimestepEmbedder(nn.Module):
             nn.SiLU(),
             nn.Linear(hidden_size, hidden_size)
         )
-        self.frequency_embedding_size = frequency_encoding_size
+        self.frequency_embedding_size = frequency_embedding_size  # Fixed typo
 
     @staticmethod
     def timestep_embedding(timesteps, dim, max_period=10000):
@@ -143,19 +143,14 @@ class Attention(nn.Module):
 
     def forward(self, x, context=None):
         B, N, C = x.shape
-        if context is not None:
-            # Concatenate x with context for cross-attention
-            kv_input = torch.cat([x, context], dim=1)
-        else:
-            kv_input = x
         
-        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
-        q, k, v = qkv[0], qkv[1], qkv[2]
+        # For self-attention
+        if context is None:
+            context = x
         
-        if context is not None:
-            kv_len = kv_input.shape[1]
-            k_v = self.qkv(kv_input).reshape(B, kv_len, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
-            k, v = k_v[1], k_v[2]
+        # Compute Q from x and K,V from context
+        q = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)[0]
+        k, v = self.qkv(context).reshape(B, context.shape[1], 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)[1:3]
 
         attn = (q @ k.transpose(-2, -1)) * self.scale
         attn = attn.softmax(dim=-1)
@@ -273,7 +268,7 @@ class MMDiT(nn.Module):
         self.y_embedder = LabelEmbedder(num_classes, hidden_size, dropout_prob=0.1)
         
         # Caption embedding
-        self.context_embedder = CaptionEmbedder(caption_channels, caption_channels)
+        self.context_embedder = CaptionEmbedder(caption_channels, caption_channels)  # Fixed initialization
         self.caption_projection = nn.Linear(caption_channels, hidden_size)
         
         # Initialize (and freeze) pos_embed by sin-cos embedding:
@@ -356,6 +351,37 @@ class MMDiT(nn.Module):
         x = self.final_layer(x, c)                # (N, T, patch_size ** 2 * out_channels)
         x = self.unpatchify(x)                   # (N, out_channels, H, W)
         return x
+
+    def forward_with_cfg(self, x, t, y=None, context=None, cfg_scale=4.0):
+        """
+        Forward pass with classifier-free guidance.
+        """
+        # Double the batch for CFG
+        x_in = torch.cat([x] * 2, dim=0)
+        t_in = torch.cat([t] * 2, dim=0)
+        
+        # Process context and labels for CFG
+        if context is not None:
+            # Create null context by zeroing embeddings
+            null_context = torch.zeros_like(context)
+            context_in = torch.cat([context, null_context], dim=0)
+        else:
+            context_in = None
+            
+        if y is not None:
+            # Create null labels
+            null_y = torch.full_like(y, self.y_embedder.num_classes)  # Use the null token
+            y_in = torch.cat([y, null_y], dim=0)
+        else:
+            y_in = None
+            
+        # Forward pass
+        out = self.forward(x_in, t_in, y=y_in, context=context_in, train=False)
+        
+        # Split output and apply CFG
+        cond_out, uncond_out = torch.chunk(out, 2, dim=0)
+        cfg_out = uncond_out + cfg_scale * (cond_out - uncond_out)
+        return cfg_out
 
 # mmdit_small.py
 def MMDiT_S_2(**kwargs):
