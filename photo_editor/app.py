@@ -6,11 +6,17 @@ import time
 
 client = OpenAI(api_key="GEMINI_API_KEY")
 
-def edit_images(img1, img2):
+# Predefined fixed image (change path to your fixed person photo)
+FIXED_IMAGE_PATH = "fixed_person.jpg"
+fixed_img = Image.open(FIXED_IMAGE_PATH)
+
+def edit_images(img2):
+    # Convert predefined img1
     img_bytes1 = BytesIO()
-    img1.save(img_bytes1, format="JPEG")
+    fixed_img.save(img_bytes1, format="JPEG")
     img_data1 = img_bytes1.getvalue()
 
+    # Convert user-uploaded img2
     img_bytes2 = BytesIO()
     img2.save(img_bytes2, format="JPEG")
     img_data2 = img_bytes2.getvalue()
@@ -38,7 +44,7 @@ def edit_images(img1, img2):
                 img_bytes = part.inline_data.data
                 image = Image.open(BytesIO(img_bytes))
 
-                # Give unique filename
+                # Unique filename
                 timestamp = int(time.time() * 1000)
                 filename = f"edited_{timestamp}.png"
                 image.save(filename)
@@ -46,13 +52,13 @@ def edit_images(img1, img2):
                 return image
     return None
 
+
 demo = gr.Interface(
     fn=edit_images,
-    inputs=[gr.Image(type="pil", label="Upload Person Photo"),
-            gr.Image(type="pil", label="Upload Background Photo")],
+    inputs=gr.Image(type="pil", label="Upload Background Photo"),
     outputs=gr.Image(type="pil", label="Result"),
     title="Photo Editor - People into Background",
-    description="Upload two images: (1) people photo, (2) background photo. The app merges them photorealistically."
+    description="Upload one background image. The app will insert the fixed people photo into your background."
 )
 
 if __name__ == "__main__":
