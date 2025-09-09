@@ -1,0 +1,5 @@
+asf_search>=5.0.0
+pyroSAR>=0.20.0
+spatialist>=0.10.0
+numpy>=1.20.0
+matplotlib>=3.5.0
