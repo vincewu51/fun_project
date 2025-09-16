@@ -25,19 +25,13 @@ Install the required libraries:
 ```bash
 pip install asf_search pyroSAR spatialist matplotlib numpy
 
-
 ## Next Steps
 
 Potential extensions for SAR exploration:
 
-Process other polarizations (VH, HH, HV) for comparison
-
-Convert amplitude to sigma0 (dB) for calibrated backscatter
-
-Apply speckle filtering to reduce noise
-
-Build time series of backscatter for change detection
-
-Overlay with geospatial layers (e.g., land cover, water bodies)
-
-Explore interferometric SAR (InSAR) for deformation and topography analysis
+- Process additional polarizations (**VH, HH, HV**) to compare with VV  
+- Convert amplitude values to **sigma0 (dB)** for calibrated backscatter  
+- Apply **speckle filtering** to improve image quality and reduce noise  
+- Build **time series** of backscatter values for change detection analysis  
+- Overlay SAR data with **geospatial layers** (e.g., land cover, vegetation, water bodies)  
+- Explore **interferometric SAR (InSAR)** for deformation and topography studies  
