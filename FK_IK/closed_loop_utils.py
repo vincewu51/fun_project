@@ -36,3 +36,43 @@ def two_arm_parallel(xd, yd, L):
     
     sol = fsolve(equations, [0.5, 0.5, -0.5, -0.5])
     return sol
+
+def stewart_platform(base_pts, plat_pts, pose):
+    """Leg lengths of Stewart–Gough platform given base, platform points and pose [x,y,z,roll,pitch,yaw]."""
+    x,y,z,roll,pitch,yaw = pose
+    Rx = np.array([[1,0,0],[0,np.cos(roll),-np.sin(roll)],[0,np.sin(roll),np.cos(roll)]])
+    Ry = np.array([[np.cos(pitch),0,np.sin(pitch)],[0,1,0],[-np.sin(pitch),0,np.cos(pitch)]])
+    Rz = np.array([[np.cos(yaw),-np.sin(yaw),0],[np.sin(yaw),np.cos(yaw),0],[0,0,1]])
+    R = Rz @ Ry @ Rx
+    t = np.array([x,y,z])
+    lengths = []
+    for Bi, Pi in zip(base_pts, plat_pts):
+        Pi_world = R @ Pi + t
+        lengths.append(np.linalg.norm(Pi_world - Bi))
+    return np.array(lengths)
+
+def rpr_3dof(base_pts, plat_pts, pose):
+    """Leg lengths for 3×RPR planar parallel manipulator."""
+    x,y,phi = pose
+    R = np.array([[np.cos(phi),-np.sin(phi)],[np.sin(phi),np.cos(phi)]])
+    lengths = []
+    for Bi, Pi in zip(base_pts, plat_pts):
+        Pi_world = R @ Pi + np.array([x,y])
+        lengths.append(np.linalg.norm(Pi_world - Bi))
+    return np.array(lengths)
+
+def jacobian_numeric(f, q, eps=1e-6):
+    """Numerical Jacobian of function f at q."""
+    q = np.array(q, dtype=float)
+    m = len(f(q))
+    n = len(q)
+    J = np.zeros((m,n))
+    for i in range(n):
+        dq = np.zeros_like(q)
+        dq[i] = eps
+        J[:,i] = (f(q+dq)-f(q-dq))/(2*eps)
+    return J
+
+def is_singular(J, tol=1e-6):
+    """Check if Jacobian is singular."""
+    return np.linalg.matrix_rank(J, tol) < min(J.shape)
