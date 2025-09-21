@@ -4,10 +4,7 @@ from scipy.optimize import fsolve
 def four_bar(theta1, L1, L2, L3, L4):
     """
     Solve 4-bar linkage closure equations.
-    Ground link: L1, input crank: L2, coupler: L3, output rocker: L4.
-    
-    theta1: input angle (radians)
-    Returns: theta2, theta3 (angles of coupler and rocker)
+    Returns theta2 (coupler) and theta3 (rocker).
     """
     def equations(vars):
         theta2, theta3 = vars
