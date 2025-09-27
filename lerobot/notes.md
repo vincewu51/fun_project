@@ -11,12 +11,28 @@ huggingface-cli download \
 
 #### Gr00t training
 https://huggingface.co/blog/nvidia/gr00t-n1-5-so101-tuning
+
+#### ACT training 
+lerobot-train \
+  --dataset.repo_id=siyulw2025/so101_test_orange_pick_001 \
+  --policy.type=act \
+  --output_dir=outputs/train/so101_test_orange_pick_001 \
+  --job_name=orange_pick_and_place \
+  --policy.device=cuda \
+  --policy.repo_id=siyulw2025/so101_test_orange_pick_001 \
+  --batch_size=1 \
+  --wandb.enable=true \
+
+# Install Claude Code
+npm install -g @anthropic-ai/claude-code
+
 -----------------------------------------------------------
 /dev/ttyACM0
 
 lerobot-setup-motors \
     --teleop.type=so101_leader \
     --teleop.port=/dev/ttyACM0
+
 
 https://github.com/huggingface/lerobot/blob/ddba994d73e6315e78c76173cd4fa90d471fc662/src/lerobot/datasets/lerobot_dataset.py#L647
 
@@ -35,12 +51,4 @@ python scripts/environments/teleoperation/teleop_se3_agent.py \
     --record \
     --dataset_file=./datasets/dataset.hdf5
 
-lerobot-train \
-  --dataset.repo_id=siyulw2025/so101_test_orange_pick_001 \
-  --policy.type=act \
-  --output_dir=outputs/train/so101_test_orange_pick_001 \
-  --job_name=orange_pick_and_place \
-  --policy.device=cuda \
-  --policy.repo_id=siyulw2025/so101_test_orange_pick_001 \
-  --batch_size=5 \
-  --wandb.enable=true \
+
