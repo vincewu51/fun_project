@@ -1,0 +1,52 @@
+_wandb:
+    value:
+        cli_version: 0.21.1
+        e:
+            dypivgdsbojaizm5xvfotm8n3ywx9y8x:
+                apple:
+                    ecpuCores: 6
+                    gpuCores: 8
+                    memoryGb: 16
+                    name: Apple M4
+                    pcpuCores: 4
+                    ramTotalBytes: "17179869184"
+                    swapTotalBytes: "3221225472"
+                codePath: wandb/wandb_multi_run.py
+                codePathLocal: wandb_multi_run.py
+                cpu_count: 10
+                cpu_count_logical: 10
+                disk:
+                    /:
+                        total: "245107195904"
+                        used: "117998862336"
+                email: siyuliu4262@gmail.com
+                executable: /opt/miniconda3/envs/lerobot/bin/python
+                git:
+                    commit: 8a8ae72e64a42d51b6f5d84d5f3431e71ea05a41
+                    remote: git@github.com:vincewu51/fun_project.git
+                host: Yifengs-MacBook-Air.local
+                memory:
+                    total: "17179869184"
+                os: macOS-15.5-arm64-arm-64bit
+                program: /Users/yifengwu/Documents/fun_project/wandb/wandb_multi_run.py
+                python: CPython 3.10.18
+                root: /Users/yifengwu/Documents/fun_project/wandb
+                startedAt: "2025-09-27T18:02:57.295245Z"
+                writerId: dypivgdsbojaizm5xvfotm8n3ywx9y8x
+        m: []
+        python_version: 3.10.18
+        t:
+            "3":
+                - 2
+                - 13
+                - 16
+            "4": 3.10.18
+            "5": 0.21.1
+            "12": 0.21.1
+            "13": darwin-arm64
+batch_size:
+    value: 16
+epochs:
+    value: 3
+learning_rate:
+    value: 0.001
