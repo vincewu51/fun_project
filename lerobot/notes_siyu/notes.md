@@ -39,6 +39,20 @@ lerobot-train \
   --batch_size=1 \
   --wandb.enable=true \
 
+#### Can use Mac to train
+device.type = 'mps'
+
+lerobot-train
+--dataset.repo_id=siyulw2025/so101_test_orange_pick_001
+--policy.type=act
+--output_dir=outputs/train/so101_test_orange_pick_001
+--job_name=orange_pick_and_place
+--policy.device=mps
+--policy.repo_id=siyulw2025/so101_test_orange_pick_001
+--batch_size=1
+--wandb.enable=true \
+
+
 # Install Claude Code
 npm install -g @anthropic-ai/claude-code
 
