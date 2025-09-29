@@ -1,8 +1,8 @@
 from huggingface_hub import upload_folder, HfApi
 
 # ---- Configuration ----
-local_dataset_path = "/home/yifeng-wu/.cache/huggingface/lerobot/EverNorif/so101_test_orange_pick"
-repo_id = "siyulw2025/so101_test_orange_pick"
+local_dataset_path = "/media/yifeng-wu/E/EverNorif/so101_test_orange_pick"
+repo_id = "siyulw2025/so101_test_orange_pick_001"
 branch = "v3.0"
 dataset_tag = "LeRobot"
 

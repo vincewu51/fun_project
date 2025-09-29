@@ -1,3 +1,6 @@
+## 2025-09-28
+python -m lerobot.async_inference.policy_server --host=127.0.0.1 --port=8080
+
 ## 2025-09-27
 #### Set UP New Runpod
 
