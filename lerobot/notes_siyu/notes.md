@@ -1,3 +1,25 @@
+## 09-28
+
+lerobot-train \
+  --dataset.repo_id=siyulw2025/so101_test_orange_pick_001 \
+  --policy.type=smolvla \
+  --output_dir=outputs/train/so101_test_orange_pick_002 \
+  --job_name=orange_pick_and_place \
+  --policy.device=cuda \
+  --policy.repo_id=siyulw2025/so101_test_orange_pick_002 \
+  --batch_size=50 \
+  --wandb.enable=true
+
+
+## wandb can't handle loss tensor from the gr00t
+import wandb
+# Example: convert tensor to float
+wandb.log({
+    "losses_after_forward": losses_after_forward.item(),
+    "losses_after_rm_padding": losses_after_rm_padding.item()
+})
+
+
 ## 2025-09-27
 ### Inference Infra set up from Benchmarking Vision, Language, & Action Models in Procedurally Generated, Open Ended Action Environments (https://arxiv.org/html/2505.05540v1)
 
@@ -47,7 +69,7 @@ lerobot-train
 --policy.type=act
 --output_dir=outputs/train/so101_test_orange_pick_001
 --job_name=orange_pick_and_place
---policy.device=mps
+--policy.device=cuda
 --policy.repo_id=siyulw2025/so101_test_orange_pick_001
 --batch_size=1
 --wandb.enable=true \
