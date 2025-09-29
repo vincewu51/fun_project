@@ -11,6 +11,16 @@ lerobot-train \
   --wandb.enable=true
 
 
+lerobot-train \
+  --dataset.repo_id=siyulw2025/so101_test_orange_pick_001 \
+  --policy.type=smolvla \
+  --output_dir=outputs/train/so101_test_orange_pick_003 \
+  --job_name=orange_pick_and_place \
+  --policy.device=cuda \
+  --policy.repo_id=siyulw2025/so101_test_orange_pick_003 \
+  --batch_size=50 \
+  --wandb.enable=true
+
 ## wandb can't handle loss tensor from the gr00t
 import wandb
 # Example: convert tensor to float
