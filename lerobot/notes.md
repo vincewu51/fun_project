@@ -1,5 +1,52 @@
 ## 2025-09-28
+#### Async Server
 python -m lerobot.async_inference.policy_server --host=127.0.0.1 --port=8080
+
+python -m lerobot.async_inference.robot_client \
+    --server_address=127.0.0.1:8080 \
+    --robot.type=so101_follower \
+    --robot.id=simulation \
+    --robot.cameras="{ laptop: {type: opencv, index_or_path: 0, width: 1920, height: 1080, 
+fps: 30}, phone: {type: opencv, index_or_path: 0, width: 1920, height: 1080, fps: 30}}" \
+    --task="pick and place oranges" \
+    --policy_type=act\
+    --pretrained_name_or_path=siyulw2025/ACT_orange \
+    --policy_device=cuda \
+    --actions_per_chunk=50 \
+    --chunk_size_threshold=0.5 \
+    --aggregate_fn_name=weighted_average \
+    --debug_visualize_queue_size=True
+
+lerobot-calibrate \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM0 --teleop.id=my_awesome_leader_arm 
+#### Inference
+  python scripts/evaluation/policy_inference.py \
+      --task=LeIsaac-SO101-PickOrange-v0 \
+      --policy_type=lerobot-act \
+      --policy_host=localhost \
+      --policy_port=8080 \
+      --policy_timeout_ms=5000 \
+      --policy_checkpoint_path=/home/yifeng-wu/ACT_orange \
+      --policy_action_horizon=5 \
+      --policy_language_instruction="orange_pick_and_place" \
+      --device=cuda \
+      --enable_cameras
+
+  python scripts/evaluation/policy_inference.py \
+      --task=LeIsaac-SO101-PickOrange-v0 \
+      --policy_type=lerobot-act \
+      --policy_host=localhost \
+      --policy_port=8080 \
+      --policy_timeout_ms=5000 \
+      --policy_checkpoint_path=/home/yifeng-wu/trash_picking \
+      --policy_action_horizon=5 \
+      --policy_language_instruction="orange_pick_and_place" \
+      --device=cuda \
+      --enable_cameras
+
+PHYSX_GPU_FOUND=1 PHYSX_USE_GPU=1 CUDA_VISIBLE_DEVICES=0 GPU_FORCE_64BIT_PTR=1 CUDA_LAUNCH_BLOCKING=0 ISAAC_SIM_REALTIME_RATIO=0.1 PHYSX_GPU_HEAP_SIZE=64 python scripts/evaluation/policy_inference.py --task=LeIsaac-SO101-PickOrange-v0 --policy_type=lerobot-act --policy_host=localhost --policy_port=8080 --policy_timeout_ms=5000 --policy_language_instruction='Pick the orange to the plate' --policy_checkpoint_path=/home/yifeng-wu/ACT_orange --policy_action_horizon=10 --device=cuda --enable_cameras
+
 
 ## 2025-09-27
 #### Set UP New Runpod
