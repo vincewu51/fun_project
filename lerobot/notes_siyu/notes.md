@@ -29,15 +29,85 @@ huggingface-cli download siyulw2025/so101_test_orange_pick_gr00t --local-dir so1
 
 
 python scripts/gr00t_finetune.py \
-  --dataset-path ../siyulw2025/so101_test_orange_pick_001/ \
+  --dataset-path ../siyulw2025/so101_test_orange_pick_gr00t/ \
   --num-gpus 1 \
   --output-dir ./so101-checkpoints \
   --max-steps 10000 \
   --data-config so100_dualcam \
-  --video-backend torcdchvision_av \
+  --video-backend torchvision_av \
   --report_to wandb
 
-## modality file
+
+nohup python scripts/gr00t_finetune.py \
+  --dataset-path ../siyulw2025/so101_test_orange_pick_gr00t/ \
+  --num-gpus 1 \
+  --output-dir ./so101-checkpoints \
+  --max-steps 10000 \
+  --data-config so100_dualcam \
+  --video-backend torchvision_av \
+  --report_to wandb \
+  > train.log 2>&1 &
+
+### create customized data-config as my data doesn't have gripper state 
+#### - AssertionError: gripper config not found in state
+cd /workspace/Isaac-GR00T && python scripts/gr00t_finetune.py \
+    --dataset-path ../siyulw2025/so101_test_orange_pick_gr00t/ \
+    --num-gpus 1 \
+    --output-dir ./so101-checkpoints \
+    --max-steps 10000 \
+    --data-config custom_data_config:So101DualCamNoGripperDataConfig \
+    --video-backend torchvision_av \
+    --report_to wandb
+
+#### reduced size to avoid memory issue (on a small machine for testing)
+cd /workspace/Isaac-GR00T && python scripts/gr00t_finetune.py \
+  --dataset-path ../siyulw2025/so101_test_orange_pick_gr00t/ \
+  --num-gpus 1 \
+  --output-dir ./so101-checkpoints \
+  --max-steps 10000 \
+  --data-config custom_data_config:So101DualCamNoGripperDataConfig \
+  --video-backend torchvision_av \
+  --report_to wandb \
+  --batch-size 50 \
+  --dataloader-num-workers 1 \
+  --dataloader-prefetch-factor 2
+
+## modality file 09301010am (need to update)
+{
+    "state": {
+        "single_arm": {
+            "start": 0,
+            "end": 6,
+            "original_key": "observation.state"
+        }
+    },
+    "action": {
+        "single_arm": {
+            "start": 0,
+            "end": 6,
+            "original_key": "action"
+        }
+    },
+    "video": {
+        "front": {
+            "original_key": "observation.images.front"
+        },
+        "wrist": {
+            "original_key": "observation.images.wrist"
+        }
+    },
+    "annotation": {
+        "human.action.task_description": {
+            "original_key": "annotation.human.action.task_description"
+        },
+        "human.validity": {},
+        "human.coarse_action": {
+            "original_key": "annotation.human.action.task_description"
+        }
+    }
+}
+
+## modality file 09300800am (need to update)
 {
     "state": {
         "left_arm": {
