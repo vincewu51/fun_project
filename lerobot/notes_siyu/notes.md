@@ -12,14 +12,117 @@ lerobot-train \
   --wandb.enable=true
 
 
+## revert the data conversion to v2.1 to have episodes.json
+upload then downloads
+
+cd /workspace/siyulw2025/
+huggingface-cli download siyulw2025/so101_test_orange_pick_gr00t --local-dir so101_test_orange_pick_gr00t --repo-type dataset
+
 ## finetune Gr00T
-python scripts/gr00t_finetune.py \
+<!-- python scripts/gr00t_finetune.py \
    --dataset-path ../siyulw2025/so101_test_orange_pick_001/ \
    --num-gpus 1 \
    --output-dir ./so101-checkpoints  \
    --max-steps 10000 \
    --data-config so100_dualcam \
-   --video-backend torchvision_av
+   --video-backend torchvision_av -->
+
+
+python scripts/gr00t_finetune.py \
+  --dataset-path ../siyulw2025/so101_test_orange_pick_001/ \
+  --num-gpus 1 \
+  --output-dir ./so101-checkpoints \
+  --max-steps 10000 \
+  --data-config so100_dualcam \
+  --video-backend torcdchvision_av \
+  --report_to wandb
+
+## modality file
+{
+    "state": {
+        "left_arm": {
+            "start": 0,
+            "end": 7
+        },
+        "left_hand": {
+            "start": 7,
+            "end": 13
+        },
+        "left_leg": {
+            "start": 13,
+            "end": 19
+        },
+        "neck": {
+            "start": 19,
+            "end": 22
+        },
+        "right_arm": {
+            "start": 22,
+            "end": 29
+        },
+        "right_hand": {
+            "start": 29,
+            "end": 35
+        },
+        "right_leg": {
+            "start": 35,
+            "end": 41
+        },
+        "waist": {
+            "start": 41,
+            "end": 44
+        }
+    },
+    "action": {
+        "left_arm": {
+            "start": 0,
+            "end": 7
+        },
+        "left_hand": {
+            "start": 7,
+            "end": 13
+        },
+        "left_leg": {
+            "start": 13,
+            "end": 19
+        },
+        "neck": {
+            "start": 19,
+            "end": 22
+        },
+        "right_arm": {
+            "start": 22,
+            "end": 29
+        },
+        "right_hand": {
+            "start": 29,
+            "end": 35
+        },
+        "right_leg": {
+            "start": 35,
+            "end": 41
+        },
+        "waist": {
+            "start": 41,
+            "end": 44
+        }
+    },
+    "video": {
+        "front": {
+            "original_key": "observation.images.front"
+        },
+        "wrist": {
+            "original_key": "observation.images.wrist"
+        }
+    },
+    "annotation": {
+        "human.action.task_description": {},
+        "human.validity": {},
+        "human.coarse_action": {
+            "original_key": "annotation.human.action.task_description"
+        }
+    }
+}
 
 
 ## wandb can't handle loss tensor from the gr00t
