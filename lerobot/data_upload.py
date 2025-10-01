@@ -1,9 +1,9 @@
 from huggingface_hub import upload_folder, HfApi
 
 # ---- Configuration ----
-local_dataset_path = "/media/yifeng-wu/E/EverNorif/so101_test_orange_pick"
-repo_id = "siyulw2025/so101_test_orange_pick_001"
-branch = "v3.0"
+local_dataset_path = "/media/yifeng-wu/E/EverNorif/so101_test_orange_pick_v033"
+repo_id = "siyulw2025/so101_test_orange_pick_gr00t"
+branch = "v2.1"
 dataset_tag = "LeRobot"
 
 # ---- Step 1: Make sure repo exists ----
@@ -32,6 +32,6 @@ upload_folder(
 )
 
 # ---- Step 3: Add the 'lerobot' tag ----
-api.create_tag(repo_id, tag=branch, revision=branch, repo_type="dataset")
+#api.create_tag(repo_id, tag=branch, revision=branch, repo_type="dataset")
 
 print(f"✅ Dataset pushed to https://huggingface.co/datasets/{repo_id}/tree/{branch}")

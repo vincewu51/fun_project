@@ -211,10 +211,9 @@ def process_single_arm_data(dataset: LeRobotDataset, task: str, demo_group: h5py
             "action": actions[frame_index],
             "observation.state": joint_pos[frame_index],
             "observation.images.front": front_images[frame_index],
-            "observation.images.wrist": wrist_images[frame_index],
-            "task": task
+            "observation.images.wrist": wrist_images[frame_index]
         }
-        dataset.add_frame(frame=frame)
+        dataset.add_frame(frame=frame, task=task)
 
     return True
 
@@ -249,10 +248,9 @@ def process_bi_arm_data(dataset: LeRobotDataset, task: str, demo_group: h5py.Gro
             "observation.state": np.concatenate([left_joint_pos[frame_index], right_joint_pos[frame_index]]),
             "observation.images.left": left_images[frame_index],
             "observation.images.top": top_images[frame_index],
-            "observation.images.right": right_images[frame_index],
-            "task": task
+            "observation.images.right": right_images[frame_index]
         }
-        dataset.add_frame(frame=frame)
+        dataset.add_frame(frame=frame, task=task)
 
     return True
 
