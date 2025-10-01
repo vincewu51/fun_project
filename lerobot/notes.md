@@ -1,5 +1,24 @@
 ## 2025-09-30
+## hugging face download
 
+
+## inference Gr00T
+python scripts/evaluation/policy_inference.py \
+  --task=LeIsaac-SO101-PickOrange-v0 \
+  --eval_rounds=10 \
+  --policy_type=gr00tn1.5 \
+  --policy_host=localhost \
+  --policy_port=5555 \
+  --policy_timeout_ms=5000 \
+  --policy_action_horizon=16 \
+  --policy_language_instruction="Grab orange and place into plate" \
+  --device=cuda \
+  --enable_cameras
+
+
+
+python scripts/inference_service.py --model-path /media/yifeng-wu/E/gr00t_orange_cache/checkpoint-10000 --server --embodiment_tag new_embodiment --data-config so100_dualcam 
+#====================================================================
 ### server
 ## on PC, we install the Isaac-Gr00T to the leisaac environment
 # server
@@ -8,11 +27,12 @@ python scripts/inference_service.py --model-path /media/yifeng-wu/E/gr00t_orange
 # client
 python scripts/inference_service.py  --client
 
-<!-- python scripts/inference_service.py --server \
+### inference
+python scripts/inference_service.py --server \
     --model_path /media/yifeng-wu/E/gr00t_orange_cache/checkpoint-30000 \
     --embodiment-tag new_embodiment \
-    --data-config so100_dualcam \
-    --denoising-steps 4 -->
+    --data-config custom_data_config:So101DualCamNoGripperDataConfig \
+    --denoising-steps 4
 
  python scripts/evaluation/policy_inference.py \
       --task=LeIsaac-SO101-PickOrange-v0 \
@@ -129,25 +149,10 @@ lerobot-train \
   --job_name=orange_pick_and_place \
   --policy.device=cuda \
   --policy.repo_id=siyulw2025/so101_test_orange_pick_001 \
-  --batch_size=5 \
-  --wandb.enable=true
+  --batch_size=1 \
+  --wandb.enable=true \
 
-#### Install Claude Code
-# Download and install nvm:
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-
-# in lieu of restarting the shell
-\. "$HOME/.nvm/nvm.sh"
-
-# Download and install Node.js:
-nvm install 22
-
-# Verify the Node.js version:
-node -v # Should print "v22.20.0".
-
-# Verify npm version:
-npm -v # Should print "10.9.3".
-
+# Install Claude Code
 npm install -g @anthropic-ai/claude-code
 
 -----------------------------------------------------------
