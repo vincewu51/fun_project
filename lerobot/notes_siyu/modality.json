@@ -1,0 +1,31 @@
+{
+    "state": {
+        "single_arm": {
+            "start": 0,
+            "end": 6,
+            "original_key": "observation.state"
+        }
+    },
+    "action": {
+        "single_arm": {
+            "start": 0,
+            "end": 6,
+            "original_key": "action"
+        }
+    },
+    "video": {
+        "front": {
+            "original_key": "observation.images.front"
+        },
+        "wrist": {
+            "original_key": "observation.images.wrist"
+        }
+    },
+    "annotation": {
+        "human.action.task_description": {},
+        "human.validity": {},
+        "human.coarse_action": {
+            "original_key": "annotation.human.action.task_description"
+        }
+    }
+}
