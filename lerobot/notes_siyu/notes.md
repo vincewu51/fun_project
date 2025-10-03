@@ -13,10 +13,22 @@ lerobot-train \
 
 
 ## revert the data conversion to v2.1 to have episodes.json
-upload then downloads
+this has no async but is compatible data format with act and smolvla
+### upload then downloads
 
-cd /workspace/siyulw2025/
+cd /workspace/siyulw2025/f
 huggingface-cli download siyulw2025/so101_test_orange_pick_gr00t --local-dir so101_test_orange_pick_gr00t --repo-type dataset
+
+##### download model
+huggingface-cli download \
+  siyulw2025/gr00t_orange \
+  --repo-type model \
+  --local-dir /media/yifeng-wu/E//gr00t_orange \
+  --exclude "checkpoint-1000/*" "checkpoint-2000/*"
+
+<!-- huggingface-cli download \
+    --repo-type model siyulw2025/gr00t_orange \
+    --local-dir ~/gr00t_orange -->
 
 ## finetune Gr00T
 <!-- python scripts/gr00t_finetune.py \
@@ -34,7 +46,7 @@ python scripts/gr00t_finetune.py \
   --output-dir ./so101-checkpoints \
   --max-steps 10000 \
   --data-config so100_dualcam \
-  --video-backend torchvision_av \
+  --video-backend discord \
   --report_to wandb
 
 
@@ -60,17 +72,34 @@ cd /workspace/Isaac-GR00T && python scripts/gr00t_finetune.py \
     --report_to wandb
 
 #### reduced size to avoid memory issue (on a small machine for testing)
+nohup bash -c 'cd /workspace/Isaac-GR00T && python scripts/gr00t_finetune.py \
+  --dataset-path ../siyulw2025/so101_test_orange_pick_gr00t/ \
+  --num-gpus 1 \
+  --output-dir ./so101-decord-checkpoints \
+  --max-steps 10000 \
+  --save-steps 1000 \
+  --data-config so100_dualcam \
+  --video-backend decord \
+  --report_to wandb \
+  --batch-size 128 \
+  --dataloader-num-workers 1 \
+  --dataloader-prefetch-factor 2' > train.log 2>&1 &
+
+
+
 cd /workspace/Isaac-GR00T && python scripts/gr00t_finetune.py \
   --dataset-path ../siyulw2025/so101_test_orange_pick_gr00t/ \
   --num-gpus 1 \
-  --output-dir ./so101-checkpoints \
-  --max-steps 10000 \
-  --data-config custom_data_config:So101DualCamNoGripperDataConfig \
-  --video-backend torchvision_av \
+  --output-dir ./so101-decord-checkpoints \
+  --max-steps 100000 \
+  --save-steps 10000 \
+  --data-config so100_dualcam \
+  --video-backend decord \
   --report_to wandb \
   --batch-size 50 \
   --dataloader-num-workers 1 \
-  --dataloader-prefetch-factor 2
+  --dataloader-prefetch-factor 2 \
+  --resume
 
 ## modality file 09301010am (need to update)
 {

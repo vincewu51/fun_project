@@ -1,6 +1,22 @@
+## 2025-10-02
+### device
+xlerobot_left:'/dev/ttyACM0'
+xlerobot_right:'/dev/ttyACM1'
+
+lerobot-setup-motors \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM0
+
+lerobot-calibrate \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM0 \
+    --teleop.id=xlerobot_left_leader_arm
+
+
+======================
+
 ## 2025-09-30
 ## hugging face download
-
 
 ## inference Gr00T
 python scripts/evaluation/policy_inference.py \
@@ -11,13 +27,14 @@ python scripts/evaluation/policy_inference.py \
   --policy_port=5555 \
   --policy_timeout_ms=5000 \
   --policy_action_horizon=16 \
-  --policy_language_instruction="Grab orange and place into plate" \
+  --policy_language_instruction="Grab the orange and place in the plate" \
   --device=cuda \
   --enable_cameras
 
 
 
-python scripts/inference_service.py --model-path /media/yifeng-wu/E/gr00t_orange_cache/checkpoint-10000 --server --embodiment_tag new_embodiment --data-config so100_dualcam 
+python scripts/inference_service.py --model-path /media/yifeng-wu/E/gr00t_orange/checkpoint-3000 --server --embodiment_tag new_embodiment --data-config so100_dualcam 
+
 #====================================================================
 ### server
 ## on PC, we install the Isaac-Gr00T to the leisaac environment
