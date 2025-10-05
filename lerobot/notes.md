@@ -1,7 +1,11 @@
 ## 2025-10-02
 ### device
-xlerobot_left:'/dev/ttyACM0'
-xlerobot_right:'/dev/ttyACM1'
+xlerobot_left:'/dev/ttyACM1'
+xlerobot_right:'/dev/ttyACM0'
+
+lerobot-setup-motors \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM1
 
 lerobot-setup-motors \
     --teleop.type=so101_leader \
@@ -9,9 +13,30 @@ lerobot-setup-motors \
 
 lerobot-calibrate \
     --teleop.type=so101_leader \
-    --teleop.port=/dev/ttyACM0 \
+    --teleop.port=/dev/ttyACM1 \
     --teleop.id=xlerobot_left_leader_arm
 
+lerobot-calibrate \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM0 \
+    --teleop.id=xlerobot_right_leader_arm
+
+### isaac sim collect data
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Household-PlateArrangement-v0 --enable_cameras --device=cpu
+
+<!-- 
+Household-Dishwashing-v0
+Household-Microwaving-v0
+Household-FridgeStocking-v0
+Household-PlateArrangement-v0
+Household-ShelfSorting-v0
+Household-DishwasherRestock-v0
+Household-MicrowaveMealPrep-v0
+Household-CoffeeService-v0
+Household-BreakfastSetup-v0
+Household-FruitDisplay-v0
+Household-PantryLoading-v0
+Household-UtensilStation-v0 -->
 
 ======================
 
