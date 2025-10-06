@@ -1,3 +1,25 @@
+## 10-05
+## donwload usd files as large files
+#### Install Git LFS if not already installed
+sudo apt-get update
+sudo apt-get install git-lfs -y
+git lfs install
+
+#### Clone only the dev branch
+git clone --branch dev --single-branch https://github.com/LightwheelAI/leisaac.git
+cd leisaac
+
+#### Fetch LFS objects for the dev branch
+git lfs pull origin dev
+
+#### updated usd
+cd leisaac
+git fetch origin
+git checkout dev
+git pull origin dev
+git lfs pull
+
+
 ## 09-28
 
 # train smolvla
