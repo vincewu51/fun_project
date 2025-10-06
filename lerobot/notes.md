@@ -22,7 +22,7 @@ lerobot-calibrate \
     --teleop.id=xlerobot_right_leader_arm
 
 ### isaac sim collect data
-python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Household-PlateArrangement-v0 --enable_cameras --device=cpu
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Household-FruitDisplay-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Household-FruitDisplay-v0.hdf5
 
 <!-- 
 Household-Dishwashing-v0
