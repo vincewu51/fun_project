@@ -14,7 +14,7 @@ python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --tel
 
 
 #### not working on debug branch
-
+#### TODO:  microwave file (microwave_meal_prep_env_cfg.py) uses BiArmTaskEnvCfg (dual SO-101 arms), which is incompatible with xlerobot
 python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Microwave-Plate-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Microwave-Plate-v0.hdf5
 <!--Traceback (most recent call last):
   File "/home/yifeng/workspace/leisaac/scripts/environments/teleoperation/teleop_se3_agent.py", line 351, in <module>
