@@ -221,12 +221,15 @@ def process_single_arm_data(dataset: LeRobotDataset, task: str, demo_group: h5py
 
 def process_bi_arm_data(dataset: LeRobotDataset, task: str, demo_group: h5py.Group, demo_name: str) -> bool:
     try:
-        actions = np.array(demo_group['actions'])
+        keys = np.array(demo_group)
+        print(np.array(demo_group['actions']))
+        actions = np.array(demo_group['actions'][:, :12])
         left_joint_pos = np.array(demo_group['obs/left_joint_pos'])
         right_joint_pos = np.array(demo_group['obs/right_joint_pos'])
-        left_images = np.array(demo_group['obs/left'])
-        right_images = np.array(demo_group['obs/right'])
-        top_images = np.array(demo_group['obs/top'])
+        left_images = np.array(demo_group['obs/left_rgb'])
+        right_images = np.array(demo_group['obs/right_rgb'])
+        top_images = np.array(demo_group['obs/top_rgb'])
+
     except KeyError:
         print(f'Demo {demo_name} is not valid, skip it')
         return False
@@ -259,12 +262,12 @@ def process_bi_arm_data(dataset: LeRobotDataset, task: str, demo_group: h5py.Gro
 
 def convert_isaaclab_to_lerobot():
     """NOTE: Modify the following parameters to fit your own dataset"""
-    repo_id = 'EverNorif/so101_test_orange_pick_v033'
-    robot_type = 'so101_follower'  # so101_follower, bi_so101_follower
-    # robot_type = 'xlerobot'
+    repo_id = 'EverNorif/test'
+    # robot_type = 'so101_follower'  # so101_follower, bi_so101_follower
+    robot_type = 'bi_so101_follower'
     fps = 30
-    hdf5_root = '~/workspace/leisaac/datasets/'  #'./datasets'
-    hdf5_files = [os.path.join(hdf5_root, 'Household-FruitDisplay-v0.hdf5')]
+    hdf5_root = '/home/yifeng/workspace/leisaac/datasets/'  #'./datasets'
+    hdf5_files = [os.path.join(hdf5_root, 'Household-FridgeStocking-v0.hdf5')]
     task = 'Grab orange and place into plate'
     push_to_hub = False
 
@@ -276,7 +279,7 @@ def convert_isaaclab_to_lerobot():
     dataset = LeRobotDataset.create(
         repo_id=repo_id,
         fps=fps,
-        root='/media/yifeng-wu/E/'+repo_id,
+        root='/home/yifeng/workspace/datasets/'+repo_id,
         robot_type=robot_type,
         features=SINGLE_ARM_FEATURES if robot_type == 'so101_follower' else BI_ARM_FEATURES,
     )
@@ -303,8 +306,8 @@ def convert_isaaclab_to_lerobot():
                     dataset.save_episode()
                     print(f'Saving episode {now_episode_index} successfully')
 
-    if push_to_hub:
-        dataset.push_to_hub()
+    # if push_to_hub:
+    #     dataset.push_to_hub()
 
 
 if __name__ == '__main__':

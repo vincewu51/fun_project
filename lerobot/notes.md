@@ -1,28 +1,113 @@
-## 2025-10-02
-### device
-xlerobot_left:'/dev/ttyACM1'
-xlerobot_right:'/dev/ttyACM0'
+## 10/09
+<!-- replay recorded files -->
+python scripts/environments/teleoperation/replay.py \
+    --dataset_file ./datasets/Kitchen-Fridge-Orange-Mimic-v0-1009.hdf5 \
+    --task Kitchen-Fridge-Orange-Mimic-v0 \
+    --enable_cameras \
+    --device cpu
 
-lerobot-setup-motors \
-    --teleop.type=so101_leader \
-    --teleop.port=/dev/ttyACM1
+<!-- how to manage multiple tasks/hdf5 files  -->
 
-lerobot-setup-motors \
-    --teleop.type=so101_leader \
-    --teleop.port=/dev/ttyACM0
+## 10/08
+#### on the dev-xlerobot-debug branch
 
-lerobot-calibrate \
-    --teleop.type=so101_leader \
-    --teleop.port=/dev/ttyACM1 \
-    --teleop.id=xlerobot_left_leader_arm
+#### working tasks on debug branch
 
-lerobot-calibrate \
-    --teleop.type=so101_leader \
-    --teleop.port=/dev/ttyACM0 \
-    --teleop.id=xlerobot_right_leader_arm
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Fridge-Orange-Mimic-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Fridge-Orange-Mimic-v0-1009.hdf5 --append
 
-### isaac sim collect data
-python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Household-FruitDisplay-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Household-FruitDisplay-v0.hdf5
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Fridge-Orange-Teleop-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Fridge-Orange-Teleop-v0.hdf5
+
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Cabinet-Plate-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Cabinet-Plate-v0.hdf5
+
+<!-- fixed by https://github.com/brain-sim/leisaac/commit/25eafce91ed4ceab15d28b59a3842a0333101c95 -->
+
+
+
+#### not working on debug branch
+
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Microwave-Plate-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Microwave-Plate-v0.hdf5
+<!--Traceback (most recent call last):
+  File "/home/yifeng/workspace/leisaac/scripts/environments/teleoperation/teleop_se3_agent.py", line 351, in <module>
+    main()
+  File "/home/yifeng/workspace/leisaac/scripts/environments/teleoperation/teleop_se3_agent.py", line 169, in main
+    env_cfg = parse_env_cfg(
+              ^^^^^^^^^^^^^^
+  File "/home/yifeng/miniconda3/envs/isaac-brain/lib/python3.11/site-packages/isaaclab/source/isaaclab_tasks/isaaclab_tasks/utils/parse_cfg.py", line 138, in parse_env_cfg
+    cfg = load_cfg_from_registry(task_name.split(":")[-1], "env_cfg_entry_point")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/yifeng/miniconda3/envs/isaac-brain/lib/python3.11/site-packages/isaaclab/source/isaaclab_tasks/isaaclab_tasks/utils/parse_cfg.py", line 104, in load_cfg_from_registry
+    mod = importlib.import_module(mod_name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/yifeng/miniconda3/envs/isaac-brain/lib/python3.11/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1140, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'leisaac.tasks.household.kitchen_microwave_stock_env_cfg'
+
+-->
+
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Fridge-Bottle-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Fridge-Bottle-v0.hdf5
+
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Fridge-Bottle-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Fridge-Bottle-v0.hdf5
+
+<!-- Summary of Changes
+
+  1. Task Registration Fix (leisaac/tasks/household/__init__.py)
+
+  - Lines 44, 53: Changed module reference from non-existent kitchen_subtask_env_cfg to kitchen_counter_bottle_env_cfg
+  - Updated class name to FridgeBottlePlacementEnvCfg
+
+  2. Missing Template Export (leisaac/tasks/template/__init__.py)
+
+  - Line 17: Added XLeRobotRewardsCfg to the exports from xlerobot_env_cfg
+
+  3. Outdated Reward API Fix (leisaac/tasks/household/fridge_stocking_env_cfg.py)
+
+  - Lines 118-136: Commented out sequential_progress reward term that was using deprecated parameters (stage_rewards, approach_distance_threshold,
+  fridge_distance_threshold)
+  - Added comment explaining it needs updating to use new sequence parameter like in kitchen_fridge_stock_env_cfg.py
+
+  4. Missing EE Frame Configuration (leisaac/tasks/household/kitchen_counter_bottle_env_cfg.py)
+
+  - Line 35: Added LEFT_EE_CFG = SceneEntityCfg("left_ee_frame") definition
+  - Updated all 4 grasp_object subtasks to include both left_ee_frame_cfg and right_ee_frame_cfg parameters:
+    - Orange sequence (line ~190)
+    - Bottle fridge sequence (line ~344)
+    - Bottle counter sequence (line ~498)
+    - Plate counter sequence (line ~624)
+
+  5. Door Subtask Name Corrections (leisaac/tasks/household/kitchen_counter_bottle_env_cfg.py)
+
+  - Renamed door_open → fridge_door_open (2 occurrences)
+  - Renamed door_closed → fridge_door_closed (2 occurrences)
+  - Changed parameter fridge_cfg → target_cfg in all door subtasks to match registry requirements -->
+
+
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Fridge-Bottle-Teleop-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Fridge-Bottle-Teleop-v0.hdf5
+<!--ModuleNotFoundError: No module named 'leisaac.tasks.household.kitchen_subtask_env_cfg'-->
+
+
+
+#### task list on debug branch
+
+<!-- 
+Kitchen-Fridge-Orange-v0
+Kitchen-Fridge-Orange-Mimic-v0
+Kitchen-Fridge-Orange-Teleop-v0
+Kitchen-Fridge-Orange-Test-v0
+Kitchen-Fridge-Bottle-v0
+Kitchen-Fridge-Bottle-Teleop-v0
+Kitchen-Cabinet-Plate-v0
+Kitchen-Cabinet-Plate-Teleop-v0
+Kitchen-Cabinet-Plate-Mimic-v0
+Kitchen-Microwave-Plate-v0
+Kitchen-Microwave-Plate-Teleop-v0
+Kitchen-Microwave-Plate-Mimic-v0 -->
+
+
+#### task list on the dev-assets branch
 
 <!-- 
 Household-Dishwashing-v0
@@ -37,6 +122,42 @@ Household-BreakfastSetup-v0
 Household-FruitDisplay-v0
 Household-PantryLoading-v0
 Household-UtensilStation-v0 -->
+
+
+
+
+## 2025-10-02
+### device
+xlerobot_left:'/dev/ttyACM1'
+xlerobot_right:'/dev/ttyACM0'
+
+lerobot-setup-motors \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM1
+
+lerobot-setup-motors \Household
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM0
+
+lerobot-calibrate \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM1 \
+    --teleop.id=xlerobot_left_leader_arm
+
+lerobot-calibrate \
+    --teleop.type=so101_leader \
+    --teleop.port=/dev/ttyACM0 \
+    --teleop.id=xlerobot_right_leader_arm
+
+### isaac sim collect data
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task -FruitDisplay-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Household-FruitDisplay-v0.hdf5
+
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Household-FridgeStocking-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Household-FridgeStocking-v0.hdf5
+
+#### todo: need to check how to change that the wheels cannot turn towards forward, gripping friction is low. in real testing we should use one time use plates
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Household-PlateArrangement-v0 --enable_cameras --device=cpu 
+
+
 
 ======================
 
