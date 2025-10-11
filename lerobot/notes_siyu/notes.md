@@ -1,4 +1,7 @@
 ## 10/10
+#### made changes to the head tilt
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Fridge-Orange-Teleop-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Fridge-Orange-Teleop-v0-1.hdf5
+
 <!-- Available Tasks (workspace/leisaac/source/leisaac/leisaac/tasks/household/__init__.py)
   Kitchen Tasks:
   - Kitchen-Fridge-Orange-v0
