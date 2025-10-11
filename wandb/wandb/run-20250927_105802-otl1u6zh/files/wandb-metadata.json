@@ -1,0 +1,37 @@
+{
+  "os":  "macOS-15.5-arm64-arm-64bit",
+  "python":  "CPython 3.10.18",
+  "startedAt":  "2025-09-27T17:58:02.611556Z",
+  "program":  "/Users/yifengwu/Documents/fun_project/wandb/wandb_quick_test.py",
+  "codePath":  "wandb/wandb_quick_test.py",
+  "codePathLocal":  "wandb_quick_test.py",
+  "git":  {
+    "remote":  "git@github.com:vincewu51/fun_project.git",
+    "commit":  "8a8ae72e64a42d51b6f5d84d5f3431e71ea05a41"
+  },
+  "email":  "siyuliu4262@gmail.com",
+  "root":  "/Users/yifengwu/Documents/fun_project/wandb",
+  "host":  "Yifengs-MacBook-Air.local",
+  "executable":  "/opt/miniconda3/envs/lerobot/bin/python",
+  "cpu_count":  10,
+  "cpu_count_logical":  10,
+  "disk":  {
+    "/":  {
+      "total":  "245107195904",
+      "used":  "117971374080"
+    }
+  },
+  "memory":  {
+    "total":  "17179869184"
+  },
+  "apple":  {
+    "name":  "Apple M4",
+    "ecpuCores":  6,
+    "pcpuCores":  4,
+    "gpuCores":  8,
+    "memoryGb":  16,
+    "swapTotalBytes":  "3221225472",
+    "ramTotalBytes":  "17179869184"
+  },
+  "writerId":  "gjhf1a4fm4xgqzdsjfakkvy766gxoyrt"
+}
