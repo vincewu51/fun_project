@@ -1,3 +1,27 @@
+## 10/10
+<!-- Available Tasks (workspace/leisaac/source/leisaac/leisaac/tasks/household/__init__.py)
+  Kitchen Tasks:
+  - Kitchen-Fridge-Orange-v0
+  - Kitchen-Fridge-Orange-Mimic-v0
+  - Kitchen-Fridge-Orange-Teleop-v0
+  - Kitchen-Fridge-Orange-Test-v0 
+  - Kitchen-Fridge-Bottle-Teleop-v0
+  - Kitchen-Fridge-Bottle-Plate-v0
+  - Kitchen-Oven-Plate-Teleop-v0
+  - Kitchen-Dishwasher-Plate-Teleop-v0
+  - Kitchen-Microwave-Plate-Teleop-v0
+  - Kitchen-Cabinet-Plate-Teleop-v0
+
+  Other Household Tasks:
+  - Laundry-Washer-Cloth-Teleop-v0
+  - Bathroom-Flush-Teleop-v0 -->
+
+## 10/9
+WIP
+        modified:   source/leisaac/leisaac/assets/robots/xlerobot.py
+        modified:   source/leisaac/leisaac/utils/env_utils.py
+Saved working directory and index state WIP on dev-assets-modification: 25eafce correct task registration class names for kitchen tasks
+
 ## 10/08
 #### on the dev-xlerobot-debug branch
 
