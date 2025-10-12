@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  isaac-brain:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: isaac-brain:latest
+    container_name: isaac-brain-training
+
+    # GPU support - requires nvidia-docker2
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    # Environment variables
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+    # Volume mounts
+    volumes:
+      - ../../../workspace:/workspace
+      - ../../../datasets:/data
+      - ../../../models:/models
+
+    # Shared memory size (important for PyTorch DataLoader)
+    shm_size: '16gb'
+
+    # Keep container running
+    stdin_open: true
+    tty: true
+
+    # Network mode
+    network_mode: host
+
+    # Command
+    command: /bin/bash
