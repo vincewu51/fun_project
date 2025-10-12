@@ -1,3 +1,19 @@
+## 10/12
+### inference using local file
+python scripts/inference_service.py --server \
+    --model_path /Users/siyulw/Documents/gr00t_orange/checkpoint-3000 \
+    --embodiment-tag new_embodiment \
+    --data-config so100_dualcam \
+    --denoising-steps 4
+    
+python getting_started/examples/eval_lerobot.py \
+    --robot.type=so100_follower \
+    --robot.port=/dev/tty.usbmodem58FA0953841 \
+    --robot.id=my_awesome_follower_arm \
+    --robot.cameras="{ wrist: {type: opencv, index_or_path: 9, width: 640, height: 480, fps: 30}, front: {type: opencv, index_or_path: 15, width: 640, height: 480, fps: 30}}" \
+    --policy_host=10.112.209.136 \
+    --lang_instruction="pick up the orange and place it into the plate."
+
 ## 10/11
 python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Cabinet-Plate-Teleop-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Cabinet-Plate-Teleop-v0-1.hdf5
 
