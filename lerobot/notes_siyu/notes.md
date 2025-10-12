@@ -1,6 +1,39 @@
+## 10/11
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Cabinet-Plate-Teleop-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Cabinet-Plate-Teleop-v0-1.hdf5
+
+<!-- Traceback (most recent call last):
+  File "/home/yifeng/workspace/leisaac/scripts/environments/teleoperation/teleop_se3_agent.py", line 355, in <module>
+    main()
+  File "/home/yifeng/workspace/leisaac/scripts/environments/teleoperation/teleop_se3_agent.py", line 344, in main
+    env.step(actions)
+  File "/home/yifeng/miniconda3/envs/isaac-brain/lib/python3.11/site-packages/isaaclab/source/isaaclab/isaaclab/envs/manager_based_rl_env.py", line 174, in step
+    self.action_manager.process_action(action.to(self.device))
+  File "/home/yifeng/miniconda3/envs/isaac-brain/lib/python3.11/site-packages/isaaclab/source/isaaclab/isaaclab/managers/action_manager.py", line 329, in process_action
+    raise ValueError(f"Invalid action shape, expected: {self.total_action_dim}, received: {action.shape[1]}.")
+ValueError: Invalid action shape, expected: 18, received: 17. -->
+
+#### delete the last one
+import h5py
+
+file_path = "./datasets/Kitchen-Fridge-Orange-Teleop-v0-3-both.hdf5"
+
+with h5py.File(file_path, "r+") as f:
+    demos = list(f.keys())
+    print("All demos:", demos)
+    # Usually named like 'demo_0', 'demo_1', ...
+    last_demo = demos[-1]
+    print(f"Deleting {last_demo}")
+    del f[last_demo]
+    print("Deleted successfully!")
+
 ## 10/10
-#### made changes to the head tilt
-python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Fridge-Orange-Teleop-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Fridge-Orange-Teleop-v0-1.hdf5
+
+<!-- collected 10+ pick and place orange -->
+prompt: "use right arm pick up an orange and gently place it into a plate."
+
+
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Fridge-Orange-Teleop-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Fridge-Orange-Teleop-v0-3-both.hdf5
+
 
 <!-- Available Tasks (workspace/leisaac/source/leisaac/leisaac/tasks/household/__init__.py)
   Kitchen Tasks:
