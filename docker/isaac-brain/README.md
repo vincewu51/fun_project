@@ -12,24 +12,76 @@ This Docker setup replicates your exact conda environment with GPU support for A
 
 ## Prerequisites
 
-1. **NVIDIA Docker Runtime** (nvidia-docker2)
-   ```bash
-   # Install nvidia-docker2
-   distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-   curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
-   curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | \
-       sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-       sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+### 1. Install Docker Engine
 
-   sudo apt-get update
-   sudo apt-get install -y nvidia-docker2
-   sudo systemctl restart docker
-   ```
+```bash
+# Update package index
+sudo apt-get update
 
-2. **Verify GPU access in Docker**
-   ```bash
-   docker run --rm --gpus all nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
-   ```
+# Install prerequisites
+sudo apt-get install -y ca-certificates curl gnupg lsb-release
+
+# Add Docker's official GPG key
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Set up the Docker repository
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Update package index
+sudo apt-get update
+
+# Install Docker Engine
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Start and enable Docker service
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Add your user to the docker group (to run docker without sudo)
+sudo usermod -aG docker $USER
+
+# Verify Docker installation
+sudo docker run hello-world
+```
+
+**Note**: After adding yourself to the docker group, log out and log back in for the changes to take effect.
+
+### 2. Install NVIDIA Container Toolkit
+
+```bash
+# Download and install the GPG key
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+# Add the repository
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+# Update package index
+sudo apt-get update
+
+# Install NVIDIA Container Toolkit
+sudo apt-get install -y nvidia-container-toolkit
+
+# Configure Docker to use NVIDIA runtime
+sudo nvidia-ctk runtime configure --runtime=docker
+
+# Restart Docker service
+sudo systemctl restart docker
+```
+
+### 3. Verify GPU Access in Docker
+
+```bash
+docker run --rm --gpus all nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
+```
+
+You should see your GPU information displayed.
 
 ## Building the Image
 
@@ -125,7 +177,38 @@ docker-compose down --rmi all
 
 ## Troubleshooting
 
+### GPU Access Issues
 If you encounter GPU access issues:
-1. Verify nvidia-docker2 is installed: `docker run --rm --gpus all nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi`
+1. Verify NVIDIA Container Toolkit is installed: `dpkg -l | grep nvidia-container-toolkit`
 2. Check Docker daemon configuration includes nvidia runtime: `cat /etc/docker/daemon.json`
-3. Restart Docker service: `sudo systemctl restart docker`
+3. Test GPU access: `docker run --rm --gpus all nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi`
+4. Restart Docker service: `sudo systemctl restart docker`
+
+### Repository Issues (Ubuntu 24.04)
+If you see errors about corrupted repository files:
+```bash
+# Remove corrupted file
+sudo rm /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+# Reinstall using the stable deb repository
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+sudo apt-get update
+```
+
+### Permission Issues
+If you get permission denied errors when running docker commands:
+```bash
+# Check if you're in the docker group
+groups
+
+# If docker is not listed, add yourself
+sudo usermod -aG docker $USER
+
+# Log out and log back in for changes to take effect
+# Or run: newgrp docker
+```

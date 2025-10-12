@@ -8,14 +8,8 @@ services:
     image: isaac-brain:latest
     container_name: isaac-brain-training
 
-    # GPU support - requires nvidia-docker2
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+    # GPU support - using runtime configuration
+    runtime: nvidia
 
     # Environment variables
     environment:
@@ -27,6 +21,10 @@ services:
       - ../../../workspace:/workspace
       - ../../../datasets:/data
       - ../../../models:/models
+      # Mount SSH keys for GitHub authentication
+      - ~/.ssh:/root/.ssh:ro
+      # Mount git config for user info
+      - ~/.gitconfig:/root/.gitconfig:ro
 
     # Shared memory size (important for PyTorch DataLoader)
     shm_size: '16gb'
