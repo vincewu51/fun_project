@@ -15,6 +15,10 @@ python getting_started/examples/eval_lerobot.py \
     --lang_instruction="pick up the orange and place it into the plate."
 
 ## 10/11
+<!-- collected 30+ pick and place orange 
+prompt: "use right arm pick up an orange and gently place it into a plate." -->
+
+<!-- working to collect plate organization data -->
 python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Cabinet-Plate-Teleop-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Cabinet-Plate-Teleop-v0-1.hdf5
 
 <!-- Traceback (most recent call last):

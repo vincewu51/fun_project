@@ -1,3 +1,56 @@
+## 10/12
+● Perfect! Here's the summary of how lerobot motor setup works:
+
+  Key Findings
+
+  Motor Setup Does NOT Save Config Files
+
+  The lerobot-setup-motors command writes settings directly to each motor's EEPROM (permanent hardware memory):
+  - Motor IDs
+  - Baudrate settings
+
+  No files are created - the motors themselves remember their configuration.
+
+  Calibration DOES Save Config Files
+
+  Location:
+  ~/.cache/huggingface/lerobot/calibration/robots/{robot_type}/{robot_id}.json
+
+  Example:
+  ~/.cache/huggingface/lerobot/calibration/robots/so101_follower/my_robot.json
+
+  Format: JSON
+  {
+    "shoulder_pan": {
+      "id": 1,
+      "drive_mode": 0,
+      "homing_offset": 2047,
+      "range_min": 500,
+      "range_max": 3500
+    }
+  }
+
+  Copying Across Machines
+
+  ✅ Motor Setup - NO COPYING NEEDED
+
+  Motors retain their IDs and baudrate in hardware. Just plug them into the new machine!
+
+  ✅ Calibration Files - PORTABLE
+
+  Copy the JSON file:
+  # From machine A to machine B
+  scp ~/.cache/huggingface/lerobot/calibration/robots/so101_follower/*.json \
+      user@machine-b:~/.cache/huggingface/lerobot/calibration/robots/so101_follower/
+
+  Only update the port path when using on new machine:
+  lerobot-calibrate \
+      --robot.type=so101_follower \
+      --robot.port=/dev/ttyACM0  # <- Update this
+      --robot.id=my_robot
+
+  The port path is not stored in the calibration file - it's only used at runtime!
+
 ## 10/09
 <!-- replay recorded files -->
 python scripts/environments/teleoperation/replay.py \
