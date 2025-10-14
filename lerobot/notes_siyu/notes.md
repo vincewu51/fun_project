@@ -1,3 +1,33 @@
+## 10/13
+
+#### replay
+python scripts/environments/teleoperation/replay.py \
+    --dataset_file ./datasets/Kitchen-Fridge-Orange-Teleop-v0-5-both_CheckLastOne.hdf5 \
+    --task Kitchen-Fridge-Orange-Mimic-v0 \
+    --enable_cameras \
+    --device cpu
+
+<!-- view the last two 
+  If you know the total number of episodes (let's say there are 10 episodes, so indices 0-9): -->
+
+python -c "from isaaclab.utils.datasets import HDF5DatasetFileHandler; h = HDF5DatasetFileHandler(); h.open('./datasets/Kitchen-Fridge-Orange-Teleop-v0-5-both_CheckLastOne.hdf5'); num = 
+  h.get_num_episodes(); print(f'Total episodes: {num}'); print(f'Last 2 episodes indices: {num-2} {num-1}')"
+
+
+  python scripts/environments/teleoperation/replay.py \
+      --dataset_file ./datasets/Kitchen-Fridge-Orange-Teleop-v0-5-both_CheckLastOne.hdf5 \
+      --task Kitchen-Fridge-Orange-Mimic-v0 \
+      --enable_cameras \
+      --device cpu \
+      --select_episodes 14 15
+
+<!-- shouldn't just directly concat the hdf5
+will have indexing issues
+solution:
+https://github.com/search?q=repo%3Ahuggingface%2Flerobot%20MultiLeRobotDataset&type=code
+https://github.com/huggingface/lerobot/issues/847 -->
+
+
 ## 10/12
 ### inference using local file
 python scripts/inference_service.py --server \
@@ -17,6 +47,8 @@ python getting_started/examples/eval_lerobot.py \
 ## 10/11
 <!-- collected 30+ pick and place orange 
 prompt: "use right arm pick up an orange and gently place it into a plate." -->
+
+python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Fridge-Orange-Teleop-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Fridge-Orange-Teleop-v0-5-both.hdf5
 
 <!-- working to collect plate organization data -->
 python scripts/environments/teleoperation/teleop_se3_agent.py --num_envs 1 --teleop_device xlerobot --left_arm_port /dev/ttyACM1 --right_arm_port /dev/ttyACM0 --task Kitchen-Cabinet-Plate-Teleop-v0 --enable_cameras --device=cpu --record --dataset_file=./datasets/Kitchen-Cabinet-Plate-Teleop-v0-1.hdf5
