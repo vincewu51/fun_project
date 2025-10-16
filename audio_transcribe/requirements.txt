@@ -1,0 +1,24 @@
+# Audio Transcription and Summarization Requirements
+
+# Core dependencies
+torch>=2.0.0
+torchaudio>=2.0.0
+
+# Whisper for transcription
+openai-whisper>=20231117
+
+# For audio file handling
+ffmpeg-python>=0.2.0
+
+# API requests for LLM backends
+requests>=2.31.0
+
+# Optional: For better audio processing
+# librosa>=0.10.0
+# soundfile>=0.12.0
+
+# Optional: For Ollama Python client (alternative to requests)
+# ollama>=0.1.0
+
+# Development and utilities
+tqdm>=4.65.0

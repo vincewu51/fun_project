@@ -1,0 +1,75 @@
+name: fun_project
+channels:
+  - conda-forge
+  - pytorch
+  - nvidia
+  - defaults
+dependencies:
+  # Python
+  - python=3.11
+
+  # Core ML/DL frameworks
+  - pytorch>=2.0.0
+  - torchvision>=0.15.0
+  - torchaudio
+  - pytorch-cuda=12.1
+
+  # Scientific computing
+  - numpy>=1.20.0
+  - scipy
+  - matplotlib>=3.5.0
+
+  # Computer vision & image processing
+  - opencv
+  - pillow
+
+  # Data handling
+  - h5py
+  - pandas
+
+  # Progress bars & utilities
+  - tqdm
+
+  # Jupyter & notebook support
+  - jupyter
+  - ipykernel
+  - ipywidgets
+
+  # Web frameworks & APIs
+  - gradio
+
+  # SAR data processing
+  - pip
+
+  # pip-only dependencies
+  - pip:
+      # SAR data processing
+      - asf_search>=5.0.0
+      - pyroSAR>=0.20.0
+      - spatialist>=0.10.0
+
+      # OpenAI API
+      - openai
+
+      # LeRobot (robotics framework)
+      - lerobot
+
+      # Weights & Biases (experiment tracking)
+      - wandb
+
+      # Hugging Face ecosystem
+      - huggingface-hub
+      - datasets
+      - transformers
+
+      # Tensor operations
+      - einops
+
+      # Modern Robotics
+      - modern-robotics
+
+      # Additional utilities
+      - pytest
+      - black
+      - flake8
+      - pre-commit

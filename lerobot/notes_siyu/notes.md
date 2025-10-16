@@ -1,3 +1,13 @@
+## 10/16
+  python scripts/gr00t_finetune.py \
+    --dataset-path /home/yifeng/workspace/xlerobot_gr00t_data \
+    --num-gpus 1 \
+    --output-dir ./xlerobot-checkpoints \
+    --max-steps 10000 \
+    --data-config xlerobot \
+    --video-backend decord \
+    --report_to wandb
+
 ## 10/13
 
 #### replay

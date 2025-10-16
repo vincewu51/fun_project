@@ -1,0 +1,58 @@
+# Audio files
+*.mp3
+*.wav
+*.m4a
+*.flac
+*.ogg
+*.opus
+*.webm
+*.aac
+
+# Output directories
+output/
+input/*.mp3
+input/*.wav
+input/*.m4a
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Whisper model cache
+models/
+~/.cache/whisper/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
