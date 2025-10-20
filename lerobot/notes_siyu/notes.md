@@ -1,3 +1,88 @@
+## 10/19
+
+### follower
+"left_arm" = "/dev/tty.usbmodem5A7C1184421"
+"right_arm "= "/dev/tty.usbmodem5A7C1235321"
+"base" = "/dev/tty.usbmodem58FA0957301"
+
+left_camera: Camera #0
+top_camera: Camera #1
+right_camera: Camera #2
+
+### leader
+"left_arm" = "/dev/tty.usbmodem5AAF2703161"
+"right_arm" = "/dev/tty.usbmodem5AAF2703681"
+
+"top_camera" = "/dev/tty.usbmodem58FA0953841"
+
+
+
+
+
+--- Detected Cameras ---
+Camera #0:
+  Name: OpenCV Camera @ 0
+  Type: OpenCV
+  Id: 0
+  Backend api: AVFOUNDATION
+  Default stream profile:
+    Format: 16.0
+    Width: 1280
+    Height: 720
+    Fps: 30.00003
+--------------------
+Camera #1:
+  Name: OpenCV Camera @ 1
+  Type: OpenCV
+  Id: 1
+  Backend api: AVFOUNDATION
+  Default stream profile:
+    Format: 16.0
+    Width: 1920
+    Height: 1080
+    Fps: 5.0
+--------------------
+Camera #2:
+  Name: OpenCV Camera @ 2
+  Type: OpenCV
+  Id: 2
+  Backend api: AVFOUNDATION
+  Default stream profile:
+    Format: 16.0
+    Width: 1280
+    Height: 720
+    Fps: 30.00003
+--------------------
+Camera #3:
+  Name: OpenCV Camera @ 3
+  Type: OpenCV
+  Id: 3
+  Backend api: AVFOUNDATION
+  Default stream profile:
+    Format: 16.0
+    Width: 1920
+    Height: 1080
+    Fps: 15.0
+--------------------
+
+
+<!-- =========================== -->
+## 10/18
+
+### follower
+left_arm = '/dev/tty.usbmodem5A7C1184421'
+right_arm = '/dev/tty.usbmodem5A7C1235321'
+base = '/dev/tty.usbmodem58FA0957301'
+
+### leader
+left_arm = '/dev/tty.usbmodem5AAF2703161'
+right_arm = '/dev/tty.usbmodem5AAF2703681'
+
+
+<!-- https://bambot.org/feetech.js -->
+
+
+
 ## 10/16
   python scripts/gr00t_finetune.py \
     --dataset-path /home/yifeng/workspace/xlerobot_gr00t_data \
