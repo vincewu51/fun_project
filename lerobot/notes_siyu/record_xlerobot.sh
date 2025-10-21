@@ -24,7 +24,11 @@ lerobot-record \
       "base_radius_m": 0.125,
       "base_motor_ids": [1, 2, 3]
   }' \
-  --robot.mount='{}' \
+ --robot.mount='{
+      "port": "/dev/tty.usbmodem5A7A0157461",
+      "pan_motor_id": 0,
+      "tilt_motor_id": 1
+  }' \
   --robot.cameras='{
       "left":  {"type": "opencv", "index_or_path": 0, "width": 640, "height": 480, "fps": 30},
       "right": {"type": "opencv", "index_or_path": 2, "width": 640, "height": 480, "fps": 30},
@@ -42,14 +46,19 @@ lerobot-record \
       "deadzone": 0.15,
       "yaw_speed_deg": 45
   }' \
-  --teleop.mount='{}' \
+ --teleop.mount='{
+      "joystick_index": 0,
+      "max_pan_speed_dps": 60.0,
+      "max_tilt_speed_dps": 45.0,
+      "deadzone": 0.15
+  }' \
   --dataset.video=true \
   --dataset.repo_id="${HF_USER}/xlerobot-test" \
   --dataset.num_episodes=20 \
-  --dataset.single_task="Use the right arm to pick up the candy and place it in the paper box." \
-  --dataset.episode_time_s=300 \
-  --dataset.reset_time_s=300 \
+  --dataset.single_task="Use the right arm to pick up the toy bear and place it in the basket." \
+  --dataset.episode_time_s=30 \
+  --dataset.reset_time_s=10 \
   --dataset.push_to_hub=true\
-  --dataset.root="/Users/yifengwu/workspace/xlerobot-data/xlerobot-test/" \
+  --dataset.root="/Users/siyulw/workspace/xlerobot-data/xlerobot-test/" \
   --display_data=true
 echo "Recording complete."
