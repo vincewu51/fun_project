@@ -1,3 +1,17 @@
+## 10/21
+# Delete episodes 0, 2, and 5 (modifies original dataset)
+lerobot-edit-dataset \
+    --repo_id lerobot/pusht \
+    --operation.type delete_episodes \
+    --operation.episode_indices "[0, 2, 5]"
+
+# Delete episodes and save to a new dataset (preserves original dataset)
+lerobot-edit-dataset \
+    --repo_id lerobot/pusht \
+    --new_repo_id lerobot/pusht_after_deletion \
+    --operation.type delete_episodes \
+    --operation.episode_indices "[0, 2, 5]"
+
 ## 10/19
 
 ### follower
