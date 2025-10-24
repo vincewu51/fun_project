@@ -1,3 +1,45 @@
+## 10/23
+Summary: Converting v3.0 → v2.0 and Uploading to HuggingFace
+
+  Files to use for future conversions:
+
+  1. Convert v3.0 → v2.1:
+  python src/lerobot/datasets/v30/convert_dataset_v30_to_v21.py \
+      --repo-id=YOUR_REPO_ID \
+      --root=/tmp/lerobot_datasets
+  2. Convert v2.1 → v2.0:
+  python convert_local_v21_to_v20.py
+  2. (Edit the paths inside the script to point to your v2.1 dataset)
+
+  2. Or use the standalone script:
+  python src/lerobot/datasets/v30/convert_dataset_v21_to_v20.py \
+      --repo-id=YOUR_REPO_ID \
+      --output-dir=/tmp/lerobot_v20_datasets \
+      --delete-episodes-stats
+  3. Upload to HuggingFace:
+  python upload_with_hub_api.py
+  3. (Edit repo_id and paths inside the script for v2.1 and v2.0 datasets)
+
+  Key Files Created:
+
+  - /Users/yifengwu/workspace/lerobot/src/lerobot/datasets/v30/convert_dataset_v21_t
+  o_v20.py - v2.1→v2.0 converter (with bug fixes)
+  - /Users/yifengwu/workspace/lerobot/convert_local_v21_to_v20.py - Local conversion
+   helper
+  - /Users/yifengwu/workspace/lerobot/upload_with_hub_api.py - HuggingFace uploader 
+  (working!)
+
+  Quick Todo for Next Time:
+
+  1. Run v3.0→v2.1 conversion
+  2. Run v2.1→v2.0 conversion
+  3. Edit upload_with_hub_api.py with correct paths
+  4. Run upload script (ensure hf auth login with write token)
+  5. Done! ✅
+
+● How is Claude doing this session? (optional)
+  1: Bad    2: Fine   3: Good   0: Dismiss
+
 ## 10/21
 # Delete episodes 0, 2, and 5 (modifies original dataset)
 lerobot-edit-dataset \
