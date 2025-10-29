@@ -1,3 +1,44 @@
+## 10/25
+
+  python scripts/gr00t_finetune.py \
+    --dataset-path /home/yifeng/workspace/xlerobot\
+    --num-gpus 1 \
+    --output-dir ./xlerobot-checkpoints \
+    --max-steps 3000 \
+    --save-steps 1000 \
+    --data-config xlerobot \
+    --video-backend torchvision_av \
+    --report_to wandb
+
+LORA:
+(gr00t) yifeng@Purrticle2:~/workspace/Isaac-GR00T$   python scripts/gr00t_finetune.py \
+    --dataset_path /home/yifeng/workspace/xlerobot \
+    --data_config xlerobot \
+    --video_backend torchvision_av \
+    --batch_size 2 \
+    --gradient_accumulation_steps 16 \
+    --lora_rank 32 \
+    --lora_alpha 64 \
+    --dataloader_num_workers 2 \
+    --output_dir ./checkpoints/xlerobot_lora \
+    --max_steps 10000 \
+    --save_steps 1000
+
+
+  python scripts/gr00t_finetune.py \
+    --dataset_path /workspace/xlerobot \
+    --data_config xlerobot \
+    --video_backend torchvision_av \
+    --batch_size 4 \
+    --gradient_accumulation_steps 8 \
+    --dataloader_num_workers 1 \
+    --dataloader_prefetch_factor 1 \
+    --output_dir ./xlerobot-checkpoints \
+    --max_steps 10000 \
+    --save_steps 500
+
+
+
 ## 10/23
 Summary: Converting v3.0 → v2.0 and Uploading to HuggingFace
 
