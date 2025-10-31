@@ -1,3 +1,22 @@
+## 10/30
+
+cd ~/workspace/b1k-baselines/baselines/openpi
+source .venv/bin/activate
+
+
+uv run scripts/compute_norm_stats.py --config-name pi0_b1k
+
+source .venv/bin/activate
+export CUDA_VISIBLE_DEVICES=1
+uv run scripts/serve_b1k.py --task_name=turning_on_radio policy:checkpoint --policy.config=pi0_b1k --policy.dir=/home/yifeng/Downloads/openpi_turning_on_radio/49999_radio
+
+conda activate behavior
+export CUDA_VISIBLE_DEVICES=0 
+python OmniGibson/omnigibson/learning/eval.py policy=websocket task.name=turning_on_radio log_path=/home/yifeng/workspace/log
+
+
+
+-------------------------------------
 ## 10/25
 
   python scripts/gr00t_finetune.py \
