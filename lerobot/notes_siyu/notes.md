@@ -1,3 +1,68 @@
+## 10/31
+Issues identified:
+1. # Overwrite below to modify the robot controller 
+controllers:
+https://github.com/StanfordVL/BEHAVIOR-1K/blob/main/OmniGibson/omnigibson/learning/configs/robot/r1pro.yaml
+
+2.
+
+
+<!-- about GPU concern - set up vironment Variables to Control Memory -->
+  export CUDA_VISIBLE_DEVICES=0
+  export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512,expandable_segments:True,garbage_collection_threshold:0.6
+
+  uv run scripts/serve_b1k.py --task_name=turning_on_radio policy:checkpoint --policy.config=pi0_b1k --policy.dir=/home/yifeng/Downloads/openpi_turning_on_radio/49999_radio
+
+
+  export CUDA_VISIBLE_DEVICES=0
+  export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512,expandable_segments:True,garbage_collection_threshold:0.6
+  python OmniGibson/omnigibson/learning/eval.py \
+    policy=websocket \
+    task.name=turning_on_radio \
+    log_path=/home/yifeng/workspace/log \
+    headless=true \
+    write_video=false \
+    partial_scene_load=true
+
+  Key settings:
+  - garbage_collection_threshold:0.6 - Release cached memory more aggressively when
+   60% is used
+  - max_split_size_mb:512 - Prevent large fragmentation
+
+
+
+<!-- Key PyTorch memory settings:
+  - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128 - Reduces fragmentation by
+  limiting split sizes
+  - expandable_segments:True - Allows memory to grow more efficiently -->
+# For the policy server (serve_b1k.py)
+  source .venv/bin/activate
+  export CUDA_VISIBLE_DEVICES=0  # Use same GPU
+  export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128,expandable_segments:True
+  export PYTORCH_NO_CUDA_MEMORY_CACHING=0
+  uv run scripts/serve_b1k.py --task_name=turning_on_radio policy:checkpoint
+  --policy.config=pi0_b1k
+  --policy.dir=/home/yifeng/Downloads/openpi_turning_on_radio/49999_radio
+
+  # For the evaluation (eval.py)
+  conda activate behavior
+  export CUDA_VISIBLE_DEVICES=0  # Use same GPU
+  export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128,expandable_segments:True
+  <!-- python OmniGibson/omnigibson/learning/eval.py policy=websocket
+  task.name=turning_on_radio log_path=/home/yifeng/workspace/log -->
+
+python OmniGibson/omnigibson/learning/eval.py \
+    policy=websocket \
+    task.name=turning_on_radio \
+    log_path=/home/yifeng/workspace/log \
+    headless=true \
+    write_video=false \
+    partial_scene_load=true \
+
+
+
+------------
+
 ## 10/30
 
 cd ~/workspace/b1k-baselines/baselines/openpi
@@ -6,8 +71,8 @@ source .venv/bin/activate
 
 uv run scripts/compute_norm_stats.py --config-name pi0_b1k
 
+<!-- export CUDA_VISIBLE_DEVICES=1 -->
 source .venv/bin/activate
-export CUDA_VISIBLE_DEVICES=1
 uv run scripts/serve_b1k.py --task_name=turning_on_radio policy:checkpoint --policy.config=pi0_b1k --policy.dir=/home/yifeng/Downloads/openpi_turning_on_radio/49999_radio
 
 conda activate behavior
