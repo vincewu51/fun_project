@@ -1,4 +1,12 @@
 ## 10/31
+
+  Name: omnigibson
+  Version: 3.7.1
+
+  Name: isaacsim
+  Version: 4.5.0.0
+
+  
 Issues identified:
 1. # Overwrite below to modify the robot controller 
 controllers:
