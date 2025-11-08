@@ -1,0 +1,106 @@
+_wandb:
+    value:
+        cli_version: 0.21.4
+        e:
+            pu8hii8q0iwewc041mx7do59r2sdm980:
+                args:
+                    - --dataset_path
+                    - /home/yifeng/workspace/training_data/2025-challenge-demos-task0006
+                    - --max_steps
+                    - "100000"
+                    - --save_steps
+                    - "5000"
+                    - --batch_size
+                    - "16"
+                    - --chunk_size
+                    - "50"
+                    - --filter_state
+                    - --wandb_project
+                    - behavior-smolvla
+                codePath: train_smolvla_lerobot.py
+                codePathLocal: train_smolvla_lerobot.py
+                cpu_count: 10
+                cpu_count_logical: 20
+                cudaVersion: "12.4"
+                disk:
+                    /:
+                        total: "1005867986944"
+                        used: "689080131584"
+                email: wuyifeng5@gmail.com
+                executable: /home/yifeng/miniconda3/envs/lerobot/bin/python
+                gpu: NVIDIA GeForce RTX 4080 SUPER
+                gpu_count: 2
+                gpu_nvidia:
+                    - architecture: Ada
+                      cudaCores: 10240
+                      memoryTotal: "17171480576"
+                      name: NVIDIA GeForce RTX 4080 SUPER
+                      uuid: GPU-9729d7fc-8842-e1fa-e645-55e9439921b0
+                    - architecture: Pascal
+                      cudaCores: 3840
+                      memoryTotal: "12884901888"
+                      name: NVIDIA TITAN Xp
+                      uuid: GPU-d3a7aa21-691a-33e2-9585-249bdc7ccd31
+                host: Purrticle2
+                memory:
+                    total: "134724550656"
+                os: Linux-6.14.0-33-generic-x86_64-with-glibc2.39
+                program: /home/yifeng/workspace/smolvla_training/train_smolvla_lerobot.py
+                python: CPython 3.10.18
+                root: /home/yifeng/workspace/smolvla_training
+                startedAt: "2025-11-08T06:34:45.577902Z"
+                writerId: pu8hii8q0iwewc041mx7do59r2sdm980
+        m: []
+        python_version: 3.10.18
+        t:
+            "1":
+                - 1
+                - 11
+                - 41
+                - 49
+                - 51
+                - 71
+            "2":
+                - 1
+                - 11
+                - 41
+                - 49
+                - 51
+                - 71
+            "3":
+                - 16
+            "4": 3.10.18
+            "5": 0.21.4
+            "6": 4.57.1
+            "12": 0.21.4
+            "13": linux-x86_64
+batch_size:
+    value: 16
+chunk_size:
+    value: 50
+dataset_path:
+    value: /home/yifeng/workspace/training_data/2025-challenge-demos-task0006
+device:
+    value: cuda
+filter_state:
+    value: true
+freeze_vision:
+    value: false
+lr:
+    value: 0.0001
+max_steps:
+    value: 100000
+num_workers:
+    value: 4
+output_dir:
+    value: ./outputs/train/smolvla_behavior
+pretrained_model:
+    value: lerobot/smolvla_base
+repo_id:
+    value: null
+save_steps:
+    value: 5000
+wandb_disable:
+    value: false
+wandb_project:
+    value: behavior-smolvla
