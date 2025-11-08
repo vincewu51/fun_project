@@ -1,3 +1,160 @@
+## 11/7
+
+● SmolVLA Evaluation Commands
+
+  Terminal 1 - Deploy SmolVLA Policy Server:
+  cd /home/yifeng/workspace/b1k-baselines/baselines/openvla-oft
+  conda activate openvla-oft
+
+  python vla-scripts/deploy.py \
+    --model_family smolvla \
+    --pretrained_checkpoint /home/yifeng/workspace/b1k-checkpoints-and-results/checkpoints-task0000/smolvla-30000/checkpoints/step_030000 \
+    --use_l1_regression True \
+    --use_film True \
+    --num_images_in_input 3 \
+    --use_proprio True \
+    --center_crop True \
+    --unnorm_key behavior_turn_on_radio
+
+  Terminal 2 - Run Evaluation:
+  cd /home/yifeng/workspace/BEHAVIOR-1K
+  conda activate behavior
+  export CUDA_VISIBLE_DEVICES=0
+
+  python OmniGibson/omnigibson/learning/eval.py \
+    policy=websocket \
+    task.name=turning_on_radio \
+    log_path=/home/yifeng/workspace/b1k-checkpoints-and-results/eval-results-task0000/eval_results_smolvla_30k_date1107 \
+    headless=true \
+    write_video=True \
+    partial_scene_load=true
+
+
+## 11/6
+
+uv run scripts/serve_b1k.py     --task_name=turning_on_radio     policy:checkpoint     --policy.config=pi0_b1k     --policy.dir=/home/yifeng/workspace/BEHAVIOR-1K/checkpoints/openpi-radio-task0/checkpoint-20000
+
+
+
+python OmniGibson/omnigibson/learning/eval.py     policy=websocket     task.name=turning_on_radio     log_path=/home/yifeng/workspace/logs/openpi0_20k_radio     headless=true     write_video=True     partial_scene_load=true
+
+
+Terminal 1 (Policy Server):
+  source .venv/bin/activate
+  uv run scripts/serve_b1k.py --task_name=picking_up_trash policy:checkpoint --policy.config=pi0_b1k --policy.dir=/home/yifeng/Downloads/openpi_picking_up_trash/49999
+
+  Terminal 2 (OmniGibson Evaluation):
+  conda activate behavior
+  export CUDA_VISIBLE_DEVICES=0
+  python OmniGibson/omnigibson/learning/eval.py policy=websocket task.name=picking_up_trash log_path=/home/yifeng/workspace/log_pi0_baseline_pickuptrash
+
+
+## 11/3
+python src/lerobot/scripts/serve_smolvla_websocket.py \
+      --pretrained_name_or_path=/home/yifeng/workspace/smolvla-task0000/checkpoints/step_030000 \
+      --device=cuda \
+      --host=0.0.0.0 \
+      --port=8000
+
+
+python omnigibson/learning/eval.py     policy=websocket     task.name=turning_on_radio     log_path=~/eval_results
+
+pip install msgpack==1.1.2 websockets==15.0.1 opencv-python==4.11.0.86
+
+
+## 11/2
+#### policy server
+conda activate behavior 
+cd ~/workspace/b1k-baselines
+export CUDA_VISIBLE_DEVICES=0
+python baselines/il_lib/serve.py \
+  robot=r1pro \
+  task=behavior \
+  arch=wbvima \
+  ckpt_path=/home/yifeng/Downloads/wbvima_radio.pth
+
+
+#### eval
+conda activate behavior 
+python OmniGibson/omnigibson/learning/eval.py policy=websocket task.name=turning_on_radio env_wrapper._target_=omnigibson.learning.wrappers.wbvima_wrapper.WBVIMAWrapper log_path=~/workspace/wbvima_log/
+
+
+-------------
+
+#### fast dev checking
+
+cd ~/workspace/b1k-baselines/baselines/il_lib
+
+python train.py \
+  data_dir=/home/yifeng/local_behavior_data/pcd_vid \
+  robot=r1pro \
+  task=behavior \
+  task.name=turning_on_radio \
+  arch=wbvima \
+  trainer.fast_dev_run=true \
+  +eval=behavior \
+  headless=false \
+  ckpt_path=/home/yifeng/Downloads/wbvima_radio/archive
+
+
+<!-- python train.py \
+  data_dir=~/radio_data \
+  robot=r1pro \
+  task=behavior \
+  task.name=turning_on_radio \
+  arch=wbvima \
+  trainer.fast_dev_run=true \
+  +eval=behavior \
+  headless=false \
+  ckpt_path=/home/yifeng/Downloads/wbvima_radio/archive -->
+
+
+###### training
+python train.py \
+  data_dir=~/radio_data \
+  robot=r1pro \
+  task=behavior \
+  task.name=turning_on_radio \
+  arch=wbvima \
+  trainer.fast_dev_run=true \
+  +eval=behavior \
+  headless=false \
+  ckpt_path=/home/yifeng/Downloads/wbvima_radio/archive
+
+
+
+<!-- python train.py data_dir=~/radio_data robot=r1pro task=behavior task.name=turning_on_radio     arch=wbvima trainer.fast_dev_run=true +eval=behavior headless=false     ckpt_path=/home/yifeng/Downloads/wbvima_radio/archive -->
+
+
+
+Summary of Changes
+
+  Problem:
+
+  Your original data path had special characters that Hydra couldn't parse:
+  /run/user/1000/gvfs/smb-share:server=tnas-039c-3.local,share=public/2025-challenge-demos/data/task-0000
+
+  Solution: Created a symlink to simplify the path
+
+  Step 1: Created symlink ~/radio_data
+  ln -sf "/run/user/1000/gvfs/smb-share:server=tnas-039c-3.local,share=public/" ~/radio_data
+
+  Key insight: The OmniGibson dataset loader (in iterable_dataset.py:61) automatically appends
+  /2025-challenge-demos/data/task-0000 to your data_dir, so the symlink must point to the parent 
+  directory that contains 2025-challenge-demos/, not the task folder itself.
+
+  Result:
+
+  - Before: data_dir='/run/user/1000/gvfs/smb-share:server=tnas-039c-3.local,share=public/2025-challenge-
+  demos/data/task-0000' ❌ (Hydra parsing error)
+  - After: data_dir=~/radio_data ✅ (Clean path that Hydra can parse)
+
+  The final resolved path is:
+  ~/radio_data/2025-challenge-demos/data/task-0000/ 
+  → Contains your 200+ episode_*.parquet files
+
+===================
+
 ## 10/31
 
   Name: omnigibson
@@ -16,7 +173,7 @@ https://github.com/StanfordVL/BEHAVIOR-1K/blob/main/OmniGibson/omnigibson/learni
 
 
 <!-- about GPU concern - set up vironment Variables to Control Memory -->
-  export CUDA_VISIBLE_DEVICES=0
+  export CUDA_VISIBLE_DEVICES=1
   export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512,expandable_segments:True,garbage_collection_threshold:0.6
 
   uv run scripts/serve_b1k.py --task_name=turning_on_radio policy:checkpoint --policy.config=pi0_b1k --policy.dir=/home/yifeng/Downloads/openpi_turning_on_radio/49999_radio
@@ -85,7 +242,7 @@ uv run scripts/serve_b1k.py --task_name=turning_on_radio policy:checkpoint --pol
 
 conda activate behavior
 export CUDA_VISIBLE_DEVICES=0 
-python OmniGibson/omnigibson/learning/eval.py policy=websocket task.name=turning_on_radio log_path=/home/yifeng/workspace/log
+python OmniGibson/omnigibson/learning/eval.py policy=websocket task.name=turning_on_radio log_path=/home/yifeng/workspace/log_pi0_baseline
 
 
 
