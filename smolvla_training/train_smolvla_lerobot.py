@@ -24,6 +24,50 @@ from lerobot.policies.factory import make_pre_post_processors
 from filter_allowed_state import filter_state, filter_state_top32, get_allowed_indices, get_top32_indices
 
 
+def compute_temporal_weights(batch, alpha, device):
+    """
+    Compute temporal weights to emphasize later frames in episodes.
+
+    Args:
+        batch: Training batch with 'episode_index' and 'frame_index' fields
+        alpha: Weighting strength (0=uniform, 1-2=emphasize end)
+        device: Torch device
+
+    Returns:
+        weights: Tensor of shape [batch_size] with temporal weights
+    """
+    if alpha <= 0:
+        return torch.ones(batch["action"].shape[0], device=device)
+
+    # Get episode and frame indices
+    episode_idx = batch.get("episode_index")
+    frame_idx = batch.get("frame_index")
+
+    if episode_idx is None or frame_idx is None:
+        # Fallback: use global index as proxy
+        idx = batch.get("index")
+        if idx is not None:
+            progress = (idx - idx.min()) / (idx.max() - idx.min() + 1e-8)
+        else:
+            return torch.ones(batch["action"].shape[0], device=device)
+    else:
+        # Compute progress per episode
+        # Group by episode and compute normalized position
+        batch_size = episode_idx.shape[0]
+        progress = torch.zeros(batch_size, device=device)
+
+        for ep_id in torch.unique(episode_idx):
+            mask = episode_idx == ep_id
+            frames = frame_idx[mask]
+            if len(frames) > 1:
+                local_progress = (frames - frames.min()) / (frames.max() - frames.min() + 1e-8)
+                progress[mask] = local_progress.float()
+
+    # Apply quadratic weighting: emphasizes the last 40% of episodes
+    weights = 1.0 + alpha * (progress ** 2)
+    return weights
+
+
 def main():
     parser = argparse.ArgumentParser(description="Train SmolVLA on BEHAVIOR Challenge dataset")
 
@@ -56,6 +100,11 @@ def main():
     # State filtering args (for BEHAVIOR standard track)
     parser.add_argument("--filter_state", action="store_true",
                        help="Filter state to 217 allowed dimensions")
+
+    # Temporal weighting args (for emphasizing critical segments)
+    parser.add_argument("--temporal_alpha", type=float, default=0.0,
+                       help="Temporal weighting strength (0=uniform, 1-2=emphasize later frames). "
+                            "Weight = 1 + alpha * progress^2")
 
     # Video loading args
     parser.add_argument("--video_tolerance", type=float, default=0.05,
@@ -173,6 +222,8 @@ def main():
     print(f"  Chunk size: {cfg.chunk_size}")
     print(f"  Freeze vision encoder: {cfg.freeze_vision_encoder}")
     print(f"  Learning rate: {cfg.optimizer_lr}")
+    if args.temporal_alpha > 0:
+        print(f"  Temporal weighting: alpha={args.temporal_alpha} (emphasizes later frames)")
 
     # Initialize SmolVLA policy
     print(f"\nInitializing SmolVLA from {args.pretrained_model}...")
@@ -321,6 +372,16 @@ def main():
             else:
                 loss = output["loss"]
 
+            # Apply temporal weighting if enabled
+            if args.temporal_alpha > 0:
+                weights = compute_temporal_weights(batch, args.temporal_alpha, device)
+                # Loss is typically shape [batch_size] or scalar
+                if loss.dim() > 0:
+                    loss = (loss * weights).mean()
+
+            # Get scalar loss for logging
+            loss_value = loss.item() if not isinstance(loss, tuple) else loss.mean().item()
+
             # Backward pass
             optimizer.zero_grad()
             loss.backward()
@@ -351,13 +412,13 @@ def main():
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                 print(f"[{timestamp}] Step {step}/{args.max_steps} | "
-                      f"Loss: {loss.item():.4f} | "
+                      f"Loss: {loss_value:.4f} | "
                       f"{sec_per_step:.2f}s/step | "
                       f"ETA: {eta_hours:.1f}h")
 
                 if not args.wandb_disable:
                     wandb.log({
-                        "train/loss": loss.item(),
+                        "train/loss": loss_value,
                         "train/step": step,
                         "train/sec_per_step": sec_per_step,
                         "train/steps_per_sec": steps_per_sec,
