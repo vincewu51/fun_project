@@ -15,13 +15,150 @@ import wandb
 
 from lerobot.configs.types import FeatureType
 from lerobot.datasets.lerobot_dataset import LeRobotDataset, LeRobotDatasetMetadata
-from lerobot.datasets.utils import dataset_to_policy_features
+from lerobot.datasets.utils import dataset_to_policy_features, write_json
 from lerobot.policies.smolvla.configuration_smolvla import SmolVLAConfig
 from lerobot.policies.smolvla.modeling_smolvla import SmolVLAPolicy
 from lerobot.policies.factory import make_pre_post_processors
+from lerobot.utils.train_utils import (
+    load_training_state,
+    save_training_state,
+    update_last_checkpoint,
+)
+from lerobot.utils.constants import CHECKPOINTS_DIR, PRETRAINED_MODEL_DIR
 
 # Import state filtering for BEHAVIOR standard track compliance
 from filter_allowed_state import filter_state, filter_state_top32, get_allowed_indices, get_top32_indices
+
+
+def worker_init_fn_gpu_decode(worker_id):
+    """Initialize CUDA in each DataLoader worker for GPU video decoding.
+
+    This must be at module level to be picklable for multiprocessing.
+    """
+    import torch
+    if torch.cuda.is_available():
+        torch.cuda.init()
+        torch.cuda.set_device(0)  # Always use GPU 0
+
+
+class FrameSkipWrapper(torch.utils.data.Dataset):
+    """
+    Wrapper that implements temporal abstraction by subsampling frames.
+
+    Instead of training at 30Hz, trains at lower frequency (e.g., 15Hz with skip=2).
+    This reduces sequence length, making long-horizon tasks easier to learn.
+
+    Args:
+        dataset: Base LeRobotDataset
+        skip: Frame skip factor (2 = every other frame, 3 = every third frame)
+    """
+    def __init__(self, dataset, skip=2):
+        self.dataset = dataset
+        self.skip = skip
+
+        # Create mapping: sample every skip-th frame
+        self.idx_mapping = list(range(0, len(dataset), skip))
+
+    def __len__(self):
+        return len(self.idx_mapping)
+
+    def __getitem__(self, idx):
+        # Map to original dataset index
+        original_idx = self.idx_mapping[idx]
+        return self.dataset[original_idx]
+
+
+class TemporalSubEpisodeWrapper(torch.utils.data.Dataset):
+    """
+    Wrapper that creates sub-episodes by starting from random timepoints.
+
+    This helps with long-horizon tasks by:
+    1. Increasing effective dataset size (3x more samples)
+    2. Balancing training across different task stages
+    3. Giving more practice on all stages equally
+
+    Args:
+        dataset: Base LeRobotDataset or FrameSkipWrapper
+        sub_episode_prob: Probability of creating a sub-episode (0.0-1.0)
+                         0.0 = always full episodes
+                         0.6 = 60% sub-episodes, 40% full episodes
+        min_length: Minimum sub-episode length in frames
+        early_bias: Probability of starting in first 1/3 of episode (0.0-1.0)
+                   0.0 = uniform sampling, 1.0 = always start early
+    """
+    def __init__(self, dataset, sub_episode_prob=0.6, min_length=300, early_bias=0.7):
+        self.dataset = dataset
+        self.sub_episode_prob = sub_episode_prob
+        self.min_length = min_length
+        self.early_bias = early_bias
+
+        # Build episode boundaries from the base dataset
+        # For FrameSkipWrapper, we need to go to the underlying dataset
+        base_dataset = dataset.dataset if hasattr(dataset, 'dataset') else dataset
+
+        # Get episode indices from hf_dataset
+        episode_indices = base_dataset.hf_dataset['episode_index']
+
+        # Build episode_start and episode_end mapping
+        self.episode_boundaries = {}
+        current_ep = None
+        for frame_idx in range(len(episode_indices)):
+            ep_idx = int(episode_indices[frame_idx])
+            if current_ep != ep_idx:
+                if current_ep is not None:
+                    self.episode_boundaries[current_ep] = (episode_start, frame_idx)
+                episode_start = frame_idx
+                current_ep = ep_idx
+        # Handle last episode
+        if current_ep is not None:
+            self.episode_boundaries[current_ep] = (episode_start, len(episode_indices))
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        import random
+
+        # Decide whether to use sub-episode
+        if random.random() > self.sub_episode_prob:
+            return self.dataset[idx]
+
+        # Get the sample to find its episode
+        sample = self.dataset[idx]
+
+        # Get episode index from the underlying dataset
+        base_dataset = self.dataset.dataset if hasattr(self.dataset, 'dataset') else self.dataset
+
+        # Map idx through FrameSkipWrapper if needed
+        actual_idx = self.dataset.idx_mapping[idx] if hasattr(self.dataset, 'idx_mapping') else idx
+
+        episode_idx = int(base_dataset.hf_dataset['episode_index'][actual_idx])
+        episode_start, episode_end = self.episode_boundaries[episode_idx]
+        episode_length = episode_end - episode_start
+
+        # If episode too short, return as-is
+        if episode_length < self.min_length * 2:
+            return sample
+
+        # Create sub-episode with configurable bias toward early starts
+        # early_bias probability: start in first 1/3 of episode (includes navigation)
+        # (1-early_bias) probability: start anywhere in episode
+        # This helps focus on navigation for long-horizon tasks
+        max_start_offset = max(0, episode_length - self.min_length)
+
+        if random.random() < self.early_bias:
+            # Bias toward beginning - sample from first third
+            early_max = max(1, max_start_offset // 3)
+            start_offset = random.randint(0, early_max)
+        else:
+            # Sample from anywhere
+            start_offset = random.randint(0, max_start_offset)
+
+        # Calculate new index
+        new_idx = episode_start + start_offset
+
+        # Return sample from the new starting point
+        return base_dataset[new_idx]
 
 
 def main():
@@ -60,6 +197,20 @@ def main():
     # Video loading args
     parser.add_argument("--video_tolerance", type=float, default=0.05,
                        help="Tolerance in seconds for video frame timestamp matching (default: 0.05)")
+
+    # Long-horizon learning args
+    parser.add_argument("--frame_skip", type=int, default=1,
+                       help="Temporal abstraction: sample every Nth frame (1=no skip, 2=15Hz, 3=10Hz)")
+    parser.add_argument("--sub_episode_prob", type=float, default=0.0,
+                       help="Temporal sub-episodes: probability of starting from random timepoint (0.0-1.0, recommended: 0.6)")
+    parser.add_argument("--sub_episode_early_bias", type=float, default=0.7,
+                       help="When using sub-episodes, probability of starting in first 1/3 of episode (0.0-1.0, default: 0.7)")
+
+    # Resume args
+    parser.add_argument("--resume", action="store_true",
+                       help="Resume training from last checkpoint in output_dir/checkpoints/last")
+    parser.add_argument("--resume_from", type=str, default=None,
+                       help="Resume training from specific checkpoint directory")
 
     # Other args
     parser.add_argument("--output_dir", type=str, default="./outputs/train/smolvla_behavior",
@@ -121,7 +272,7 @@ def main():
     for key, ft in all_input_features.items():
         # Only include RGB images and state features
         if "image" in key:
-            if "rgb" in key:  # Only RGB cameras
+            if "rgb" in key:  # Only RGB cameras (all 3: head, left_wrist, right_wrist)
                 input_features[key] = ft
         else:
             # Include all non-image features (state, etc.)
@@ -158,6 +309,11 @@ def main():
         print("   Pretrained SmolVLA expects max_state_dim=32.")
         print("   Automatically enabling state filtering to top-32 dimensions.\n")
         args.filter_state = True
+
+    # Update input_features to reflect filtered state dimension
+    if args.filter_state and "observation.state" in input_features:
+        print(f"\n📝 Updating config: observation.state dimension 256 → 32 (filtered)")
+        input_features["observation.state"].shape = (32,)
 
     cfg = SmolVLAConfig(
         input_features=input_features,
@@ -215,11 +371,36 @@ def main():
     # Load dataset
     print(f"\nLoading dataset...")
     print(f"  Video frame tolerance: {args.video_tolerance}s")
+    print(f"  Video backend: torchcodec with GPU acceleration")
+    print(f"  WARNING: GPU decoding in DataLoader workers may cause CUDA initialization errors")
+    print(f"           If training fails, revert to CPU decoding in video_utils.py:197")
     dataset = LeRobotDataset(
         dataset_path_str,
         delta_timestamps=delta_timestamps,
         tolerance_s=args.video_tolerance,
+        video_backend="torchcodec",  # Uses GPU-accelerated H.265 decoding (modified in lerobot/datasets/video_utils.py)
     )
+
+    original_len = len(dataset)
+    print(f"  Total frames in base dataset: {original_len}")
+
+    # Apply temporal abstraction (frame skip) if requested
+    if args.frame_skip > 1:
+        print(f"\n🚀 Applying Temporal Abstraction (frame skip={args.frame_skip})...")
+        dataset = FrameSkipWrapper(dataset, skip=args.frame_skip)
+        effective_fps = fps / args.frame_skip
+        print(f"  Effective FPS: {effective_fps:.1f}Hz (was {fps}Hz)")
+        print(f"  Total frames after skip: {len(dataset)} ({len(dataset) / original_len * 100:.1f}% of original)")
+
+    # Apply temporal sub-episodes if requested
+    if args.sub_episode_prob > 0.0:
+        print(f"\n🚀 Applying Temporal Sub-Episodes (probability={args.sub_episode_prob})...")
+        dataset = TemporalSubEpisodeWrapper(dataset,
+                                           sub_episode_prob=args.sub_episode_prob,
+                                           early_bias=args.sub_episode_early_bias)
+        print(f"  {args.sub_episode_prob * 100:.0f}% of batches will use sub-episodes")
+        print(f"  Early bias (favor navigation): {args.sub_episode_early_bias * 100:.0f}% toward first 1/3 of episode")
+        print(f"  Effective dataset diversity: ~{1 + args.sub_episode_prob * 2:.1f}x more training samples")
 
     print(f"  Total frames available for training: {len(dataset)}")
 
@@ -232,20 +413,24 @@ def main():
         else:
             print(f"  {key}: {type(value)}")
 
-    # Create dataloader
+    # Create dataloader with GPU video decoding support
     dataloader = torch.utils.data.DataLoader(
         dataset,
         num_workers=args.num_workers,
         batch_size=args.batch_size,
         shuffle=True,
-        pin_memory=device.type == "cuda",
+        pin_memory=False if args.num_workers > 0 else True,  # Disable with GPU decoding
         drop_last=True,
+        persistent_workers=True if args.num_workers > 0 else False,  # Keep workers alive
+        worker_init_fn=worker_init_fn_gpu_decode if args.num_workers > 0 else None,
+        multiprocessing_context='spawn' if args.num_workers > 0 else None,  # Required for CUDA
     )
 
     print(f"\nDataLoader created:")
     print(f"  Batch size: {args.batch_size}")
     print(f"  Num batches: {len(dataloader)}")
     print(f"  Num workers: {args.num_workers}")
+    print(f"  GPU video decoding: enabled" if args.num_workers > 0 else "N/A (single process)")
 
     # Create optimizer
     optimizer = torch.optim.AdamW(
@@ -256,16 +441,53 @@ def main():
         weight_decay=cfg.optimizer_weight_decay,
     )
 
+    # Initialize step counter
+    step = 0
+
+    # Resume training state if requested
+    if args.resume or args.resume_from:
+        # Determine checkpoint path
+        if args.resume_from:
+            resume_checkpoint = Path(args.resume_from)
+        else:
+            # Look for 'last' symlink in output_dir/checkpoints/
+            resume_checkpoint = output_dir / "checkpoints" / "last"
+
+        if resume_checkpoint.exists():
+            print(f"\n{'='*80}")
+            print(f"Resuming Training from Checkpoint")
+            print(f"{'='*80}\n")
+            print(f"Loading checkpoint from: {resume_checkpoint}")
+
+            try:
+                # Load full training state (step, optimizer, scheduler, RNG)
+                step, optimizer, _ = load_training_state(
+                    resume_checkpoint,
+                    optimizer,
+                    scheduler=None  # No scheduler in this script yet
+                )
+                print(f"✓ Successfully resumed from step {step}")
+                print(f"  Current learning rate: {optimizer.param_groups[0]['lr']}")
+                print(f"  Optimizer state loaded (momentum, etc.)")
+                print(f"  RNG state restored for reproducibility")
+            except Exception as e:
+                print(f"⚠ Warning: Could not load training state: {e}")
+                print(f"  Starting from step 0 with fresh optimizer")
+                step = 0
+        else:
+            if args.resume:
+                print(f"\n⚠ Warning: No checkpoint found at {resume_checkpoint}")
+                print(f"  Starting fresh training from step 0\n")
+
     # Training loop
     print(f"\n{'='*80}")
-    print(f"Starting Training")
+    print(f"Starting Training" + (f" from step {step}" if step > 0 else ""))
     print(f"{'='*80}\n")
 
     if args.max_steps is None:
         print("ERROR: --max_steps must be specified")
         return
 
-    step = 0
     done = False
     start_time = time.time()
     step_start_time = time.time()
@@ -273,17 +495,11 @@ def main():
     while not done:
         dataloader_iter = iter(dataloader)
         while True:
-            # Try to load batch with error handling for corrupted frames
+            # Try to load batch
             try:
                 batch = next(dataloader_iter)
             except StopIteration:
                 break
-            except (AssertionError, RuntimeError) as e:
-                if "violate the tolerance" in str(e) or "video" in str(e).lower():
-                    print(f"\n⚠️  Skipping corrupted batch at step {step}: {str(e)[:100]}...")
-                    continue
-                else:
-                    raise
 
             # Preprocess batch
             batch = preprocessor(batch)
@@ -365,16 +581,39 @@ def main():
 
             # Save checkpoint
             if args.save_steps is not None and step > 0 and step % args.save_steps == 0:
-                checkpoint_path = output_dir / f"checkpoint_step_{step}"
-                policy.save_pretrained(checkpoint_path)
-                print(f"  ✓ Saved checkpoint to {checkpoint_path}")
+                # Use LeRobot's checkpoint structure: output_dir/checkpoints/NNNNNN/
+                num_digits = max(6, len(str(args.max_steps)))
+                step_id = f"{step:0{num_digits}d}"
+                checkpoint_dir = output_dir / CHECKPOINTS_DIR / step_id
+
+                # Save model weights
+                pretrained_dir = checkpoint_dir / PRETRAINED_MODEL_DIR
+                policy.save_pretrained(pretrained_dir)
+                preprocessor.save_pretrained(pretrained_dir)
+                postprocessor.save_pretrained(pretrained_dir)
+
+                # Save training state (optimizer, step, RNG)
+                save_training_state(
+                    checkpoint_dir,
+                    step,
+                    optimizer,
+                    scheduler=None  # No scheduler yet
+                )
+
+                # Update 'last' symlink
+                update_last_checkpoint(checkpoint_dir)
+
+                print(f"  ✓ Saved checkpoint to {checkpoint_dir}")
+                print(f"    - Model weights: {pretrained_dir}")
+                print(f"    - Training state: {checkpoint_dir / 'training_state'}")
 
                 # Delete old checkpoints if keeping only last N
                 if args.keep_last_n_checkpoints > 0:
-                    # Get all checkpoint directories (excluding final_checkpoint)
+                    # Get all checkpoint directories in checkpoints/
+                    checkpoints_parent = output_dir / CHECKPOINTS_DIR
                     checkpoints = sorted(
-                        [d for d in output_dir.glob("checkpoint_step_*") if d.is_dir()],
-                        key=lambda x: int(x.name.split("_")[-1])
+                        [d for d in checkpoints_parent.glob("[0-9]*") if d.is_dir()],
+                        key=lambda x: int(x.name)
                     )
 
                     # Delete oldest checkpoints if we have more than N
@@ -390,10 +629,24 @@ def main():
                 done = True
                 break
 
-    # Save final checkpoint
-    final_checkpoint_path = output_dir / "final_checkpoint"
-    policy.save_pretrained(final_checkpoint_path)
-    print(f"\n✓ Saved final checkpoint to {final_checkpoint_path}")
+    # Save final checkpoint with training state
+    final_checkpoint_dir = output_dir / "final_checkpoint"
+    final_pretrained_dir = final_checkpoint_dir / PRETRAINED_MODEL_DIR
+
+    policy.save_pretrained(final_pretrained_dir)
+    preprocessor.save_pretrained(final_pretrained_dir)
+    postprocessor.save_pretrained(final_pretrained_dir)
+
+    save_training_state(
+        final_checkpoint_dir,
+        step,
+        optimizer,
+        scheduler=None
+    )
+
+    print(f"\n✓ Saved final checkpoint to {final_checkpoint_dir}")
+    print(f"  - Model weights: {final_pretrained_dir}")
+    print(f"  - Training state: {final_checkpoint_dir / 'training_state'}")
 
     if not args.wandb_disable:
         wandb.finish()
