@@ -5,14 +5,9 @@ lerobot-record  \
   --robot.cameras="{ up: {type: opencv, index_or_path: /dev/video10, width: 640, height: 480, fps: 30}, side: {type: intelrealsense, serial_number_or_name: 233522074606, width: 640, height: 480, fps: 30}}" \
   --robot.id=my_awesome_follower_arm \
   --display_data=false \
-  --dataset.repo_id=${HF_USER}/eval_so100 \
+  --dataset.repo_id=ywu67/eval_smolvla_grab_pen\
   --dataset.single_task="Put lego brick into the transparent box" \
-  # <- Teleop optional if you want to teleoperate in between episodes \
-  # --teleop.type=so100_leader \
-  # --teleop.port=/dev/ttyACM0 \
-  # --teleop.id=my_awesome_leader_arm \
   --policy.path=ywu67/smolvla_grab_pen
-
   
 ## 10/12
 ● Perfect! Here's the summary of how lerobot motor setup works:
