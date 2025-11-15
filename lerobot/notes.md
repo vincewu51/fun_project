@@ -1,14 +1,19 @@
 ## 11/14
 lerobot-record  \
-  --robot.type=so100_follower \
-  --robot.port=/dev/ttyACM1 \
-  --robot.cameras="{ up: {type: opencv, index_or_path: /dev/video10, width: 640, height: 480, fps: 30}, side: {type: intelrealsense, serial_number_or_name: 233522074606, width: 640, height: 480, fps: 30}}" \
+  --robot.type=so101_follower \
+  --robot.port=/dev/tty.usbmodem5A7C1235321 \
+  --robot.cameras="{ top: {type: opencv, index_or_path: 2, width: 1920, height: 1080, fps: 30}, left: {type: opencv, index_or_path: 0, width: 1920, height: 1080, fps: 30}}" \
   --robot.id=my_awesome_follower_arm \
-  --display_data=false \
-  --dataset.repo_id=ywu67/eval_smolvla_grab_pen\
-  --dataset.single_task="Put lego brick into the transparent box" \
-  --policy.path=ywu67/smolvla_grab_pen
-  
+  --display_data=true \
+  --dataset.repo_id=ywu67/eval_smolvla_grab_pen_40k\
+  --dataset.single_task="Grab the cube" \
+  --policy.path=ywu67/smolvla_grab_pen \
+  --dataset.reset_time_s=5 \
+  --dataset.num_episodes=3 \
+  --dataset.episode_time_s=180
+
+
+
 ## 10/12
 ● Perfect! Here's the summary of how lerobot motor setup works:
 
