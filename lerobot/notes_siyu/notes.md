@@ -1,10 +1,16 @@
-11/12
+## 11/14
+uv run scripts/serve_b1k.py     --task_name=turning_on_radio     policy:checkpoint     --policy.config=pi0_b1k     --policy.dir=/home/yifeng/workspace/BEHAVIOR-1K/checkpoints/openpi-radio-task0/checkpoint-20000
+
+python OmniGibson/omnigibson/learning/eval.py     policy=websocket     task.name=turning_on_radio     log_path=/home/yifeng/workspace/logs/openpi0_20k_radio     headless=true     write_video=True     partial_scene_load=true
+
+
+## 11/12
 
 uv run scripts/serve_b1k.py --task_name=picking_up_trash policy:checkpoint --policy.config=pi05_b1k --policy.dir=/home/yifeng/workspace/b1k-checkpoints-and-results/checkpoints-task0001/pi05-step18499
 
 
 
-11/8
+## 11/8
 uv run scripts/serve_b1k.py --task_name=picking_up_trash policy:checkpoint
   --policy.config=pi05_b1k
   --policy.dir=/home/yifeng/workspace/b1k-checkpoints-and-results/checkpoints-task0001/pi05-step4000/checkpoints/step_4000
