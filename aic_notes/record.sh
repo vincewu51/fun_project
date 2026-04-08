@@ -14,7 +14,6 @@ pixi run lerobot-record \
   --display_data=true
 
 
-
   ### remove old cache
   rm -rf ~/.cache/huggingface/lerobot/siyulw2025/ca
   ble-insertion-0407
