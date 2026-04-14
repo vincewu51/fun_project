@@ -30,3 +30,12 @@ distrobox enter -r aic_eval
 
 # Inside the container, start the environment
 /entrypoint.sh ground_truth:=false start_aic_engine:=true
+
+
+CUDA_VISIBLE_DEVICES=0 pixi run -e pi05 ros2 run aic_model aic_model --ros-args \
+  -p use_sim_time:=true \
+  -p policy:=aic_example_policies.ros.RunRLT \
+  -p policy_args.vla_backend:=pi05 \
+  -p policy_args.checkpoint_path:="$(pwd)/aic_utils/aic_rlt/checkpoints/rlt_pi05/phase2_offline.pt" \
+  -p policy_args.pi05_checkpoint:=/home/yifeng/workspace/pi05_base/pi05_base \
+  -p "policy_args.instruction:=Insert SFP cable into NIC port"
