@@ -4,9 +4,9 @@
 
 | Version | HF Repo | Enc | Data | Method | Iters | Train Time | Chunk | Replan | Val Pos | Score | Date |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| **v1** | `v1-lora-full-delta` | delta | 270K | LoRA, lr=5e-4 | 40K | ~45 min | 30 | 15 | - | 63/300 | 04-26 |
-| **v2** | `v2-lora-full-abs` | abs | 270K | LoRA, lr=5e-4 | 20K | ~40 min | 30 | 15 | - | 63/300 | 04-27 |
-| **v3** | `v3-lora-sub-abs` | abs | 103K | LoRA, lr=5e-4, coef=0.1 | 50K | ~1.7h | 30 | 15 | 1.6cm | - | 04-29 |
+| **v1** | [`v1-lora-full-delta`](https://huggingface.co/siyulw2025/v1-lora-full-delta) | delta | 270K | LoRA, lr=5e-4 | 40K | ~45 min | 30 | 15 | - | 63/300 | 04-26 |
+| **v2** | [`v2-lora-full-abs`](https://huggingface.co/siyulw2025/v2-lora-full-abs) | abs | 270K | LoRA, lr=5e-4 | 20K | ~40 min | 30 | 15 | - | 63/300 | 04-27 |
+| **v3** | [`v3-lora-sub-abs`](https://huggingface.co/siyulw2025/v3-lora-sub-abs) | abs | 103K | LoRA, lr=5e-4, coef=0.1 | 50K | ~1.7h | 30 | 15 | 1.6cm | - | 04-29 |
 | **v4** | local only | abs | 270K | Full FT + frozen VLM | 20K | ~30 min | 30 | 15 | - | - | 04-29 |
 
 **Defaults:** action chunk=30 steps (1.5s), replan=15, diffusion steps=10, control=pose
