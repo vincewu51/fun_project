@@ -9,6 +9,7 @@
 | **v3** | v3-lora-sub-abs | abs | 103K | LoRA r=8, lr=5e-4, coef=0.1 | 30 | 15 | - | 04-29 |
 | **v4** | local only | abs | 270K | Full FT + frozen VLM | 30 | 15 | - | 04-29 |
 | **v5** | v5-lora-r32-full-delta-velmode | delta | 270K | LoRA r=32, vel mode | 30 | 15 | running | 04-30 |
+| **v8** | v8-lora-r32-full-abs-velmode | abs | 270K | LoRA r=32, vel mode | 30 | 15 | ready | 04-30 |
 | **v7** | v7-lora-full-delta-short8 | delta | 270K | LoRA r=8, num_actions=8 | **8** | **4** | ready | 04-30 |
 
 ## Detailed Results
@@ -67,3 +68,4 @@ docker run --rm --gpus all --network host \
   ghcr.io/intrinsic-dev/aic/aic_eval:latest \
   /entrypoint.sh ground_truth:=false start_aic_engine:=true
 ```
+| **v8** | v8-lora-r32-full-abs-velmode | abs | 270K | LoRA r=32, vel mode | 30 | 15 | ready | 04-30 |
