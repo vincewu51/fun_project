@@ -11,13 +11,6 @@
 
 **Defaults:** action chunk=30 steps (1.5s), replan=15, diffusion steps=10, control=pose
 
-| Version | HF Repo | Encoding | Data | Method | Best Iters | Val Pos Loss | Eval Score | Date |
-|---|---|---|---|---|---|---|---|---|
-| **v1** | `v1-lora-full-delta` | delta | 270K (full) | LoRA, lr=5e-4, coef=1.0 | 40K | — | 63/300 | 2026-04-26 |
-| **v2** | `v2-lora-full-abs` | absolute | 270K (full) | LoRA, lr=5e-4, coef=1.0 | 20K | — | 63/300 | 2026-04-27 |
-| **v3** | `v3-lora-sub-abs` | absolute | 103K (subsampled) | LoRA, lr=5e-4, coef=0.1 | 50K | 1.6cm | — | 2026-04-29 |
-| **v4** | local only | absolute | 270K (full) | Full FT + frozen VLM | 20K | — | — | 2026-04-29 |
-
 ## Detailed Results
 
 ### v1 — `v1-lora-full-delta`
