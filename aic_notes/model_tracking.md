@@ -8,7 +8,12 @@
 | **v2** | xvla-absolute/ckpt-20000 | abs | 270K | LoRA r=8, lr=5e-4 | 30 | 15 | 63/300 | 04-27 |
 | **v3** | v3-lora-sub-abs | abs | 103K | LoRA r=8, lr=5e-4, coef=0.1 | 30 | 15 | - | 04-29 |
 | **v4** | local only | abs | 270K | Full FT + frozen VLM | 30 | 15 | - | 04-29 |
+<<<<<<< HEAD
 | **v5** | v5-lora-r32-sub-abs-velmode | abs | 293K (cableholder-all) | LoRA r=32, lr_coef=1.0, vel mode | 30 | 15 | trained ✓ | 04-30 |
+=======
+| **v5** | v5-lora-r32-full-delta-velmode | delta | 270K | LoRA r=32, vel mode | 30 | 15 | running | 04-30 |
+| **v8** | v8-lora-r32-full-abs-velmode | abs | 270K | LoRA r=32, vel mode | 30 | 15 | done | 04-30 |
+>>>>>>> bd811fa (v8: training done)
 | **v7** | v7-lora-full-delta-short8 | delta | 270K | LoRA r=8, num_actions=8 | **8** | **4** | ready | 04-30 |
 
 ## Detailed Results
@@ -91,3 +96,7 @@ docker run --rm --gpus all --network host \
   ghcr.io/intrinsic-dev/aic/aic_eval:latest \
   /entrypoint.sh ground_truth:=false start_aic_engine:=true
 ```
+<<<<<<< HEAD
+=======
+| **v8** | v8-lora-r32-full-abs-velmode | abs | 270K | LoRA r=32, vel mode | 30 | 15 | done | 04-30 |
+>>>>>>> bd811fa (v8: training done)
