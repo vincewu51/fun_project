@@ -1,5 +1,5 @@
 {
   "action_encoding": "absolute",
   "mode": "peft",
-  "wandb_run_name": "xvla-lora-paper-recipe"
+  "wandb_run_name": "v3-lora-sub-abs"
 }

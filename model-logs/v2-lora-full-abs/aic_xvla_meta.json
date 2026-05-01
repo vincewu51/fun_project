@@ -1,5 +1,5 @@
 {
   "action_encoding": "absolute",
   "mode": "peft",
-  "wandb_run_name": "xvla-absolute-full-v1"
+  "wandb_run_name": "v2-lora-full-abs"
 }

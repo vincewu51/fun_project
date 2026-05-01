@@ -1,5 +1,5 @@
 {
   "action_encoding": "absolute",
   "mode": "full",
-  "wandb_run_name": "xvla-full-ft-vlm-frozen"
+  "wandb_run_name": "v4-fullft-full-abs"
 }
