@@ -49,6 +49,8 @@ If v5b clears v1's 63/300 baseline, it confirms the capacity bump (r=32) and ful
 ### v6 — v6-fullft-full-abs-jointlr
 Full FT, abs encoding, joint LR. First non-LoRA arm; tests whether updating the VLM jointly (vs LoRA's frozen-VLM bias) helps tier-3 insertion. Branch/worktree `yf_v6-fullft-full-abs-jointlr`. Compute: Velda `anycloud-a100-1` pool (not 5080 — A100 keeps stock `xvla-stable` env, no Blackwell torch nightly needed). Data: `siyulw2025/cableholder-all` HF dataset → `~/aic_xvla_data/cableholder-all/` via `convert_lerobot_to_xvla.py`. Joint LR uses X-VLA's existing param-group split (`--learning_rate 1e-4 --learning_coef 0.1` → vlm=1e-5, head=1e-4) — no upstream patch needed. 20K iters, save_interval=1000.
 
+**Upload (2026-05-01):** ckpt-20000 + sidecar pushed to https://huggingface.co/siyulw2025/v6-fullft-full-abs-jointlr. Intermediate ckpts kept local only.
+
 
 Shorter horizon (8 actions), delta. Less open-loop drift.
 
