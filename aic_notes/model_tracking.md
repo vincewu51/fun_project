@@ -12,6 +12,8 @@
 | **v7** | v7-lora-full-delta-short8 | delta | 270K | LoRA r=8, num_actions=8 | 8 | 4 | - | 04-30 |
 | **v8** | v8-lora-r32-full-abs-velmode | abs | 270K | LoRA r=32, vel mode | 30 | 15 | train | 04-30 |
 | **v9** | v9-lora-r32-sub-abs-velmode-2stage | abs | 103K | LoRA r=32, 2-stage (freeze→full) | 30 | 15 | planned | 04-30 |
+| **v7 | v7-lora-full-delta-short8 | delta | 270K | LoRA r=8, num_actions=8 | 8 | 4 | done | 04-30 |
+| **v8** | v8-lora-r32-full-abs-velmode | abs | 270K | LoRA r=32, vel mode | 30 | 15 | done | 04-30 |
 
 ## Detailed Results
 
@@ -31,6 +33,7 @@ LoRA r=32, absolute, velocity mode, coef=1.0. 30K on 4080 SUPER. G2 all passed.
 Full FT, abs encoding, joint LR. First non-LoRA arm; tests whether updating the VLM jointly (vs LoRA's frozen-VLM bias) helps tier-3 insertion. Branch/worktree `yf_v6-fullft-full-abs-jointlr`. Compute: Velda `anycloud-a100-1` pool (not 5080 — A100 keeps stock `xvla-stable` env, no Blackwell torch nightly needed). Data: `siyulw2025/cableholder-all` HF dataset → `~/aic_xvla_data/cableholder-all/` via `convert_lerobot_to_xvla.py`. Joint LR uses X-VLA's existing param-group split (`--learning_rate 1e-4 --learning_coef 0.1` → vlm=1e-5, head=1e-4) — no upstream patch needed. 20K iters, save_interval=1000.
 
 ### v7 — v7-lora-full-delta-short8
+### v7 | v7-lora-full-delta-short8 | delta | 270K | LoRA r=8, num_actions=8 | 8 | 4 | done)
 Shorter horizon (8 actions), delta. Less open-loop drift.
 
 ### v8 — v8-lora-r32-full-abs-velmode (training)
