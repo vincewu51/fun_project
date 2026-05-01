@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X-VLA Model Comparison</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+    }
+  }
+}
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  .badge { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium; }
+  .badge-blue { @apply bg-blue-100 text-blue-800; }
+  .badge-orange { @apply bg-orange-100 text-orange-800; }
+  .badge-green { @apply bg-green-100 text-green-800; }
+  .badge-gray { @apply bg-gray-100 text-gray-600; }
+  .badge-yellow { @apply bg-yellow-100 text-yellow-800; }
+  .sort-asc::after { content: ' ▲'; font-size: 0.65rem; }
+  .sort-desc::after { content: ' ▼'; font-size: 0.65rem; }
+  .best-row { @apply bg-green-50 border-l-4 border-l-green-500; }
+  .hover-row:hover { @apply bg-gray-50; }
+  .card { @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6; }
+  .detail-grid { display: none; }
+  .detail-grid.open { display: table-row; }
+  tr.best-row td:first-child { padding-left: 12px; }
+</style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900 antialiased">
+
+<!-- Header -->
+<header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-gray-900">X-VLA Model Comparison</h1>
+        <p class="text-sm text-gray-500 mt-1">Training run tracking &amp; evaluation dashboard</p>
+      </div>
+      <div class="text-right text-xs text-gray-400">
+        <span id="genTime">—</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+<!-- Summary Cards -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="summaryCards"></section>
+
+<!-- Controls -->
+<section class="card">
+  <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+    <div class="flex items-center gap-3">
+      <label class="text-sm font-medium text-gray-600">Filter</label>
+      <select id="encodingFilter" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        <option value="all">All Encodings</option>
+        <option value="absolute">Absolute</option>
+        <option value="delta">Delta</option>
+      </select>
+      <select id="modeFilter" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        <option value="all">All Methods</option>
+        <option value="peft">LoRA / PEFT</option>
+        <option value="full">Full FT</option>
+      </select>
+    </div>
+    <div class="relative w-full sm:w-64">
+      <input type="text" id="searchInput" placeholder="Search models..." class="w-full text-sm border border-gray-300 rounded-lg pl-9 pr-3 py-1.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+      <svg class="absolute left-2.5 top-2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison Table -->
+<section class="card overflow-x-auto p-0" id="tableSection">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm" id="modelTable">
+      <thead class="bg-gray-50 border-b border-gray-200 text-left">
+        <tr>
+          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="id">Model</th>
+          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="encoding">Encoding</th>
+          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="data">Data</th>
+          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="method">Method</th>
+          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="chunk">Chunk</th>
+          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="valLoss">Pos Loss</th>
+          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="rotLoss">Rot Loss</th>
+          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="score">Score</th>
+          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="ckpts">Ckpts</th>
+          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="status">Status</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+  <div id="noResults" class="hidden text-center py-12 text-gray-400 text-sm">No models match your filters.</div>
+</section>
+
+<!-- Charts -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="card"><h3 class="text-sm font-semibold text-gray-700 mb-4">Val Loss by Model</h3><div style="height:240px"><canvas id="barChart"></canvas></div></div>
+  <div class="card"><h3 class="text-sm font-semibold text-gray-700 mb-4">Training Steps vs Val Loss</h3><div style="height:240px"><canvas id="scatterChart"></canvas></div></div>
+</section>
+<section class="card">
+  <h3 class="text-sm font-semibold text-gray-700 mb-4">Hyperparameter Comparison</h3>
+  <div style="height:220px"><canvas id="hparamChart"></canvas></div>
+</section>
+
+<!-- Detail Cards -->
+<section class="space-y-4" id="detailCards">
+  <h2 class="text-lg font-semibold text-gray-800">Model Details</h2>
+  <div id="detailContainer" class="space-y-3"></div>
+</section>
+
+</main>
+
+<footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-gray-400">
+  X-VLA Model Dashboard &middot; auto-generated from training checkpoints
+</footer>
+
+<script>
+// ── Embedded data ──
+const MODELS_DATA = {"models":[
+  {"id":"v6-fullft-full-abs-jointlr","action_encoding":"absolute","mode":"full","num_actions":null,"checkpoints":[],"data":{"train_episodes":162,"val_episodes":18},"hyperparams":{"batch_size":1,"learning_rate":0.0001,"weight_decay":0.0,"iters":20000,"freeze_steps":0,"warmup_steps":500,"use_cosine_decay":true,"min_lr_ratio":0.05,"save_interval":1000,"seed":0,"freeze_vlm":false,"vlm_lr":1e-05,"head_lr":0.0001},"best_eval":null,"all_eval_results":[],"training_complete":false},
+  {"id":"v7-lora-full-delta-short8","action_encoding":"delta","mode":"peft","num_actions":8,"checkpoints":[{"step":10000,"path":"ckpt-10000"},{"step":12000,"path":"ckpt-12000"},{"step":14000,"path":"ckpt-14000"},{"step":16000,"path":"ckpt-16000"},{"step":18000,"path":"ckpt-18000"},{"step":2000,"path":"ckpt-2000"},{"step":20000,"path":"ckpt-20000"},{"step":22000,"path":"ckpt-22000"},{"step":24000,"path":"ckpt-24000"},{"step":26000,"path":"ckpt-26000"},{"step":28000,"path":"ckpt-28000"},{"step":30000,"path":"ckpt-30000"},{"step":32000,"path":"ckpt-32000"},{"step":34000,"path":"ckpt-34000"},{"step":4000,"path":"ckpt-4000"},{"step":6000,"path":"ckpt-6000"},{"step":8000,"path":"ckpt-8000"}],"data":{"train_episodes":162,"val_episodes":18},"hyperparams":{"batch_size":2,"learning_rate":0.0005,"weight_decay":0.0,"iters":40000,"freeze_steps":0,"warmup_steps":50,"use_cosine_decay":true,"min_lr_ratio":0.05,"save_interval":2000,"seed":0,"freeze_vlm":false,"num_actions":8},"best_eval":{"step":27000,"pos":0.0006,"rot":0.0004},"all_eval_results":[{"step":1000,"pos":0.0221,"rot":0.0161},{"step":2000,"pos":0.0234,"rot":0.0054},{"step":3000,"pos":0.0147,"rot":0.0029},{"step":4000,"pos":0.0077,"rot":0.0037},{"step":5000,"pos":0.0021,"rot":0.0071},{"step":6000,"pos":0.0029,"rot":0.0035},{"step":7000,"pos":0.0123,"rot":0.0057},{"step":8000,"pos":0.0051,"rot":0.0025},{"step":9000,"pos":0.0124,"rot":0.0044},{"step":10000,"pos":0.0048,"rot":0.0043},{"step":11000,"pos":0.0015,"rot":0.0058},{"step":12000,"pos":0.0059,"rot":0.0053},{"step":13000,"pos":0.0033,"rot":0.0026},{"step":14000,"pos":0.0085,"rot":0.0039},{"step":15000,"pos":0.0062,"rot":0.0057},{"step":16000,"pos":0.0024,"rot":0.0022},{"step":17000,"pos":0.0083,"rot":0.0023},{"step":18000,"pos":0.0032,"rot":0.0008},{"step":19000,"pos":0.0055,"rot":0.0005},{"step":20000,"pos":0.0117,"rot":0.0015},{"step":21000,"pos":0.0048,"rot":0.0018},{"step":22000,"pos":0.0037,"rot":0.0016},{"step":23000,"pos":0.003,"rot":0.0005},{"step":24000,"pos":0.0021,"rot":0.0004},{"step":25000,"pos":0.0015,"rot":0.0005},{"step":26000,"pos":0.0017,"rot":0.0008},{"step":27000,"pos":0.0006,"rot":0.0004},{"step":28000,"pos":0.0036,"rot":0.0001},{"step":29000,"pos":0.0015,"rot":0.0004},{"step":30000,"pos":0.0014,"rot":0.0003},{"step":31000,"pos":0.001,"rot":0.0007},{"step":32000,"pos":0.0014,"rot":0.0006},{"step":33000,"pos":0.0015,"rot":0.0004},{"step":34000,"pos":0.0013,"rot":0.0001},{"step":35000,"pos":0.0017,"rot":0.0004}],"training_complete":false},
+  {"id":"v8-lora-r32-full-abs-velmode","action_encoding":"absolute","mode":"peft","num_actions":null,"checkpoints":[{"step":10500,"path":"ckpt-10500"},{"step":12000,"path":"ckpt-12000"},{"step":13500,"path":"ckpt-13500"},{"step":1500,"path":"ckpt-1500"},{"step":15000,"path":"ckpt-15000"},{"step":16500,"path":"ckpt-16500"},{"step":18000,"path":"ckpt-18000"},{"step":19500,"path":"ckpt-19500"},{"step":21000,"path":"ckpt-21000"},{"step":22500,"path":"ckpt-22500"},{"step":24000,"path":"ckpt-24000"},{"step":25500,"path":"ckpt-25500"},{"step":27000,"path":"ckpt-27000"},{"step":28500,"path":"ckpt-28500"},{"step":3000,"path":"ckpt-3000"},{"step":30000,"path":"ckpt-30000"},{"step":4500,"path":"ckpt-4500"},{"step":6000,"path":"ckpt-6000"},{"step":7500,"path":"ckpt-7500"},{"step":9000,"path":"ckpt-9000"}],"data":{"train_episodes":162,"val_episodes":18},"hyperparams":{"batch_size":1,"learning_rate":0.0005,"weight_decay":0.0,"iters":30000,"freeze_steps":0,"warmup_steps":50,"use_cosine_decay":true,"min_lr_ratio":0.05,"save_interval":1500,"seed":0,"freeze_vlm":false,"lora_r":32,"lora_alpha":64},"best_eval":{"step":21000,"pos":0.0052,"rot":0.0005},"all_eval_results":[{"step":1000,"pos":0.5118,"rot":0.0057},{"step":2000,"pos":0.4405,"rot":0.0229},{"step":3000,"pos":0.0713,"rot":0.033},{"step":4000,"pos":1.1026,"rot":0.0054},{"step":5000,"pos":1.4872,"rot":0.0029},{"step":6000,"pos":0.2191,"rot":0.0062},{"step":7000,"pos":0.478,"rot":0.0174},{"step":8000,"pos":1.431,"rot":0.0064},{"step":9000,"pos":0.2977,"rot":0.0055},{"step":10000,"pos":0.0603,"rot":0.0018},{"step":11000,"pos":0.2271,"rot":0.0086},{"step":12000,"pos":0.5853,"rot":0.0055},{"step":13000,"pos":0.1429,"rot":0.003},{"step":14000,"pos":0.3994,"rot":0.0016},{"step":15000,"pos":0.0242,"rot":0.0023},{"step":16000,"pos":0.0321,"rot":0.0012},{"step":17000,"pos":0.0591,"rot":0.0013},{"step":18000,"pos":0.0092,"rot":0.0008},{"step":19000,"pos":0.0093,"rot":0.0002},{"step":20000,"pos":0.0894,"rot":0.0005},{"step":21000,"pos":0.0052,"rot":0.0005},{"step":22000,"pos":0.0084,"rot":0.0006},{"step":23000,"pos":0.0144,"rot":0.0005},{"step":24000,"pos":0.0136,"rot":0.0003},{"step":25000,"pos":0.0091,"rot":0.0008},{"step":26000,"pos":0.0206,"rot":0.0002},{"step":27000,"pos":0.0153,"rot":0.0002},{"step":28000,"pos":0.0181,"rot":0.0003},{"step":29000,"pos":0.0297,"rot":0.0009}],"training_complete":true},
+  {"id":"xvla_absolute","action_encoding":"absolute","mode":"peft","num_actions":null,"checkpoints":[{"step":1000,"path":"ckpt-1000"},{"step":10000,"path":"ckpt-10000"},{"step":15000,"path":"ckpt-15000"},{"step":2000,"path":"ckpt-2000"},{"step":20000,"path":"ckpt-20000"},{"step":20000,"path":"ckpt-20000_merged"},{"step":3000,"path":"ckpt-3000"},{"step":5000,"path":"ckpt-5000"}],"data":{"train_episodes":162,"val_episodes":18},"hyperparams":{"batch_size":1,"learning_rate":0.0005,"weight_decay":0.0,"iters":3000,"freeze_steps":0,"warmup_steps":50,"use_cosine_decay":false,"min_lr_ratio":0.1,"save_interval":1000,"seed":0},"best_eval":{"step":16000,"pos":0.0089,"rot":0.0008},"all_eval_results":[{"step":1000,"pos":0.0765,"rot":0.0341},{"step":2000,"pos":0.0868,"rot":0.0196},{"step":1000,"pos":0.1616,"rot":0.0409},{"step":2000,"pos":0.0301,"rot":0.0023},{"step":3000,"pos":0.0222,"rot":0.0007},{"step":4000,"pos":0.1444,"rot":0.0032},{"step":5000,"pos":0.0352,"rot":0.0092},{"step":6000,"pos":0.0138,"rot":0.0036},{"step":7000,"pos":0.0123,"rot":0.0003},{"step":8000,"pos":0.0486,"rot":0.0028},{"step":9000,"pos":0.1041,"rot":0.0006},{"step":10000,"pos":0.2063,"rot":0.0059},{"step":11000,"pos":0.2742,"rot":0.0009},{"step":12000,"pos":0.1172,"rot":0.0011},{"step":13000,"pos":0.128,"rot":0.0008},{"step":14000,"pos":0.0122,"rot":0.0006},{"step":15000,"pos":0.2038,"rot":0.0039},{"step":16000,"pos":0.0089,"rot":0.0008},{"step":17000,"pos":0.0153,"rot":0.0006},{"step":18000,"pos":0.0384,"rot":0.0045},{"step":19000,"pos":0.0203,"rot":0.0014}],"training_complete":true},
+  {"id":"xvla_absolute_continued","action_encoding":"absolute","mode":"peft","num_actions":null,"checkpoints":[{"step":10000,"path":"ckpt-10000"},{"step":15000,"path":"ckpt-15000"},{"step":20000,"path":"ckpt-20000"},{"step":5000,"path":"ckpt-5000"}],"data":{"train_episodes":162,"val_episodes":18},"hyperparams":{"batch_size":2,"learning_rate":0.0005,"weight_decay":0.0,"iters":20000,"freeze_steps":200,"warmup_steps":50,"use_cosine_decay":false,"min_lr_ratio":0.1,"save_interval":5000,"seed":0},"best_eval":{"step":6000,"pos":0.0041,"rot":0.0003},"all_eval_results":[{"step":1000,"pos":0.0222,"rot":0.0017},{"step":2000,"pos":0.0089,"rot":0.0004},{"step":3000,"pos":0.0251,"rot":0.0016},{"step":4000,"pos":0.0305,"rot":0.002},{"step":5000,"pos":0.0593,"rot":0.001},{"step":6000,"pos":0.0041,"rot":0.0003},{"step":7000,"pos":0.0163,"rot":0.0012},{"step":8000,"pos":0.0266,"rot":0.0009},{"step":9000,"pos":0.0199,"rot":0.0005},{"step":10000,"pos":0.1576,"rot":0.0023},{"step":11000,"pos":0.18,"rot":0.0009},{"step":12000,"pos":0.0522,"rot":0.0005},{"step":13000,"pos":0.0725,"rot":0.0011},{"step":14000,"pos":0.0175,"rot":0.0013},{"step":15000,"pos":0.0064,"rot":0.001},{"step":16000,"pos":0.0187,"rot":0.0027},{"step":17000,"pos":0.0085,"rot":0.0013},{"step":18000,"pos":0.0269,"rot":0.0004},{"step":19000,"pos":0.007,"rot":0.0008}],"training_complete":true},
+  {"id":"xvla_full_ft","action_encoding":"absolute","mode":"full","num_actions":null,"checkpoints":[{"step":10000,"path":"ckpt-10000"},{"step":20000,"path":"ckpt-20000"}],"data":{"train_episodes":162,"val_episodes":18},"hyperparams":{"batch_size":2,"learning_rate":0.0001,"weight_decay":0.0,"iters":100000,"freeze_steps":1000,"warmup_steps":2000,"use_cosine_decay":true,"min_lr_ratio":0.05,"save_interval":10000,"seed":0,"freeze_vlm":true},"best_eval":null,"all_eval_results":[],"training_complete":false},
+  {"id":"xvla_lora_sub","action_encoding":"absolute","mode":"peft","num_actions":null,"checkpoints":[{"step":10000,"path":"ckpt-10000"},{"step":20000,"path":"ckpt-20000"},{"step":30000,"path":"ckpt-30000"},{"step":40000,"path":"ckpt-40000"},{"step":50000,"path":"ckpt-50000"}],"data":{"train_episodes":162,"val_episodes":18},"hyperparams":{"batch_size":2,"learning_rate":0.0005,"learning_coef":0.1,"weight_decay":0.0,"iters":50000,"freeze_steps":0,"warmup_steps":50,"use_cosine_decay":true,"min_lr_ratio":0.05,"save_interval":10000,"seed":0,"freeze_vlm":false},"best_eval":{"step":32000,"pos":0.0055,"rot":0.0026},"all_eval_results":[{"step":1000,"pos":0.206,"rot":0.0066},{"step":2000,"pos":0.3079,"rot":0.0094},{"step":3000,"pos":0.0252,"rot":0.002},{"step":4000,"pos":0.1129,"rot":0.0048},{"step":5000,"pos":0.1807,"rot":0.0015},{"step":6000,"pos":0.0616,"rot":0.002},{"step":7000,"pos":0.1053,"rot":0.0028},{"step":8000,"pos":0.2072,"rot":0.0018},{"step":9000,"pos":0.0348,"rot":0.0019},{"step":10000,"pos":0.0559,"rot":0.0005},{"step":11000,"pos":0.0311,"rot":0.0024},{"step":12000,"pos":0.2723,"rot":0.0027},{"step":13000,"pos":0.0723,"rot":0.0007},{"step":14000,"pos":0.2426,"rot":0.0015},{"step":15000,"pos":0.1088,"rot":0.0012},{"step":16000,"pos":0.0402,"rot":0.0009},{"step":17000,"pos":0.2817,"rot":0.0034},{"step":18000,"pos":0.0395,"rot":0.0015},{"step":19000,"pos":0.1126,"rot":0.0011},{"step":20000,"pos":0.0354,"rot":0.0019},{"step":21000,"pos":0.0641,"rot":0.0016},{"step":22000,"pos":0.0549,"rot":0.0014},{"step":23000,"pos":0.0558,"rot":0.0004},{"step":24000,"pos":0.0975,"rot":0.0037},{"step":25000,"pos":0.1057,"rot":0.0006},{"step":26000,"pos":0.0611,"rot":0.0029},{"step":27000,"pos":0.0402,"rot":0.0024},{"step":28000,"pos":0.0466,"rot":0.0006},{"step":29000,"pos":0.0347,"rot":0.0035},{"step":30000,"pos":0.0349,"rot":0.001},{"step":31000,"pos":0.0528,"rot":0.0008},{"step":32000,"pos":0.0055,"rot":0.0026},{"step":33000,"pos":0.0077,"rot":0.0009},{"step":34000,"pos":0.0281,"rot":0.0025},{"step":35000,"pos":0.0209,"rot":0.0021},{"step":36000,"pos":0.033,"rot":0.0011},{"step":37000,"pos":0.0379,"rot":0.0017},{"step":38000,"pos":0.0348,"rot":0.0019},{"step":39000,"pos":0.0526,"rot":0.0011},{"step":40000,"pos":0.0392,"rot":0.0013},{"step":41000,"pos":0.029,"rot":0.0008},{"step":42000,"pos":0.046,"rot":0.0004},{"step":43000,"pos":0.0129,"rot":0.0008},{"step":44000,"pos":0.0117,"rot":0.0007},{"step":45000,"pos":0.0299,"rot":0.0007},{"step":46000,"pos":0.0254,"rot":0.0004},{"step":47000,"pos":0.0174,"rot":0.0009},{"step":48000,"pos":0.0112,"rot":0.0008},{"step":49000,"pos":0.0164,"rot":0.0005}],"training_complete":true}
+]};
+
+const GENERATED_AT = "2026-05-01T03:10:31+00:00";
+
+// ── Derived fields ──
+function getMethod(model) {
+  if (model.mode === 'full') {
+    const parts = [];
+    if (model.hyperparams.freeze_vlm) parts.push('VLM frozen');
+    if (model.hyperparams.vlm_lr != null && model.hyperparams.head_lr != null) parts.push('joint LR');
+    return 'Full FT' + (parts.length ? ' (' + parts.join(', ') + ')' : '');
+  }
+  const r = model.hyperparams.lora_r || 8;
+  const parts = [];
+  if (model.hyperparams.num_actions) parts.push('chunk=' + model.hyperparams.num_actions);
+  if (model.id.includes('continued')) parts.push('cont.');
+  if (model.hyperparams.learning_coef && model.hyperparams.learning_coef !== 1.0) parts.push('coef=' + model.hyperparams.learning_coef);
+  return 'LoRA r=' + r + (parts.length ? ', ' + parts.join(', ') : '');
+}
+
+function getDataTag(model) {
+  if (model.hyperparams.train_metas_path && model.hyperparams.train_metas_path.includes('sub')) return 'sub';
+  return 'full';
+}
+
+function getChunk(model) {
+  return model.hyperparams.num_actions || model.num_actions || null;
+}
+
+function fmtNum(n, decimals) {
+  if (decimals === undefined) decimals = 4;
+  if (n == null) return '--';
+  return Number(n).toFixed(decimals);
+}
+
+// ── State ──
+let sortKey = 'valLoss';
+let sortAsc = true;
+let expandedModels = {};
+
+// ── Summary cards ──
+function renderSummary() {
+  const models = MODELS_DATA.models;
+  const withEval = models.filter(m => m.best_eval);
+  let bestPos = null, bestPosModel = null;
+  let bestRot = null, bestRotModel = null;
+  withEval.forEach(m => {
+    if (bestPos === null || m.best_eval.pos < bestPos) { bestPos = m.best_eval.pos; bestPosModel = m.id; }
+    if (bestRot === null || m.best_eval.rot < bestRot) { bestRot = m.best_eval.rot; bestRotModel = m.id; }
+  });
+  const latestCkpt = Math.max(...models.flatMap(m => m.checkpoints.map(c => c.step)), 0);
+
+  const cards = [
+    { label: 'Models', value: models.length, sub: (models.filter(m => m.training_complete).length) + ' complete' },
+    { label: 'Best Pos Loss', value: bestPos != null ? fmtNum(bestPos) : '--', sub: bestPosModel || '' },
+    { label: 'Best Rot Loss', value: bestRot != null ? fmtNum(bestRot) : '--', sub: bestRotModel || '' },
+    { label: 'Latest Ckpt', value: latestCkpt.toLocaleString() + ' steps', sub: new Date(GENERATED_AT).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) },
+  ];
+
+  document.getElementById('summaryCards').innerHTML = cards.map(c =>
+    `<div class="card flex flex-col gap-1">
+      <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">${c.label}</span>
+      <span class="text-2xl font-bold text-gray-900">${c.value}</span>
+      <span class="text-xs text-gray-400 truncate" title="${c.sub}">${c.sub}</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('genTime').textContent = 'Generated ' + new Date(GENERATED_AT).toLocaleString();
+}
+
+// ── Table ──
+function getFilteredModels() {
+  const encFilter = document.getElementById('encodingFilter').value;
+  const modeFilter = document.getElementById('modeFilter').value;
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  let models = [...MODELS_DATA.models];
+
+  if (encFilter !== 'all') models = models.filter(m => m.action_encoding === encFilter);
+  if (modeFilter !== 'all') models = models.filter(m => m.mode === modeFilter);
+  if (search) models = models.filter(m => m.id.toLowerCase().includes(search));
+
+  // Sort
+  models.sort((a, b) => {
+    let va, vb;
+    switch (sortKey) {
+      case 'id': va = a.id; vb = b.id; break;
+      case 'encoding': va = a.action_encoding; vb = b.action_encoding; break;
+      case 'data': va = getDataTag(a); vb = getDataTag(b); break;
+      case 'method': va = getMethod(a); vb = getMethod(b); break;
+      case 'chunk': va = getChunk(a) || 999; vb = getChunk(b) || 999; break;
+      case 'valLoss': va = a.best_eval ? a.best_eval.pos : 999; vb = b.best_eval ? b.best_eval.pos : 999; break;
+      case 'rotLoss': va = a.best_eval ? a.best_eval.rot : 999; vb = b.best_eval ? b.best_eval.rot : 999; break;
+      case 'score': va = '--'; vb = '--'; break;
+      case 'ckpts': va = a.checkpoints.length; vb = b.checkpoints.length; break;
+      case 'status': va = a.training_complete ? 1 : 0; vb = b.training_complete ? 1 : 0; break;
+      default: va = a.id; vb = b.id;
+    }
+    if (typeof va === 'string') return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    return sortAsc ? va - vb : vb - va;
+  });
+
+  return models;
+}
+
+function renderTable() {
+  const models = getFilteredModels();
+  const bestPos = Math.min(...models.filter(m => m.best_eval).map(m => m.best_eval.pos), Infinity);
+
+  document.getElementById('noResults').classList.toggle('hidden', models.length > 0);
+
+  document.getElementById('tableBody').innerHTML = models.map(m => {
+    const isBest = m.best_eval && m.best_eval.pos === bestPos;
+    const rowClass = isBest ? 'best-row' : 'hover-row';
+    const chunk = getChunk(m);
+    return `<tr class="${rowClass} border-b border-gray-100 cursor-pointer" onclick="toggleDetail('${m.id}')">
+      <td class="px-4 py-3 font-medium text-gray-900">
+        <span class="text-xs text-gray-400 mr-1">${m.mode === 'full' ? '🔧' : '🎯'}</span>${m.id}
+      </td>
+      <td class="px-4 py-3"><span class="badge ${m.action_encoding === 'absolute' ? 'badge-blue' : 'badge-orange'}">${m.action_encoding}</span></td>
+      <td class="px-4 py-3"><span class="badge ${getDataTag(m) === 'sub' ? 'badge-yellow' : 'badge-gray'}">${getDataTag(m)}</span></td>
+      <td class="px-4 py-3 text-gray-600 text-xs">${getMethod(m)}</td>
+      <td class="px-4 py-3 text-gray-600">${chunk || '--'}</td>
+      <td class="px-4 py-3 font-mono text-sm ${isBest ? 'text-green-700 font-bold' : 'text-gray-700'}">${m.best_eval ? fmtNum(m.best_eval.pos) : '--'}</td>
+      <td class="px-4 py-3 font-mono text-sm text-gray-700">${m.best_eval ? fmtNum(m.best_eval.rot) : '--'}</td>
+      <td class="px-4 py-3 text-gray-400">--</td>
+      <td class="px-4 py-3"><span class="badge badge-gray">${m.checkpoints.length}</span></td>
+      <td class="px-4 py-3"><span class="badge ${m.training_complete ? 'badge-green' : 'badge-yellow'}">${m.training_complete ? 'done' : 'running'}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Sort header indicators
+  document.querySelectorAll('th[data-sort]').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.sort === sortKey) th.classList.add(sortAsc ? 'sort-asc' : 'sort-desc');
+  });
+}
+
+// ── Detail cards ──
+function toggleDetail(id) {
+  expandedModels[id] = !expandedModels[id];
+  renderDetails();
+}
+
+function renderDetails() {
+  const container = document.getElementById('detailContainer');
+  container.innerHTML = MODELS_DATA.models.map(m => {
+    const open = expandedModels[m.id];
+    const hp = m.hyperparams;
+    const hpKeys = Object.keys(hp).filter(k => !['output_dir','train_metas_path','val_metas_path','models','log_interval','save_interval','seed'].includes(k));
+    return `<div class="card">
+      <div class="flex items-center justify-between cursor-pointer" onclick="toggleDetail('${m.id}')">
+        <h4 class="font-semibold text-gray-800">${m.id}</h4>
+        <span class="text-gray-400 text-xs transform transition-transform ${open ? 'rotate-180' : ''}">▼</span>
+      </div>
+      <div class="${open ? 'mt-4' : 'hidden'} space-y-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          ${hpKeys.map(k => `<div class="bg-gray-50 rounded-lg px-3 py-2"><span class="text-xs text-gray-400">${k}</span><div class="text-sm font-mono text-gray-700">${typeof hp[k] === 'boolean' ? hp[k] : (hp[k] ?? '--')}</div></div>`).join('')}
+        </div>
+        ${m.all_eval_results.length > 0 ? `
+        <div>
+          <h5 class="text-xs font-semibold text-gray-500 mb-2 uppercase">Eval Progression</h5>
+          <div class="max-h-48 overflow-y-auto"><table class="w-full text-xs">
+            <thead class="bg-gray-50"><tr><th class="px-2 py-1 text-left text-gray-500">Step</th><th class="px-2 py-1 text-left text-gray-500">Pos Loss</th><th class="px-2 py-1 text-left text-gray-500">Rot Loss</th></tr></thead>
+            <tbody>${m.all_eval_results.slice().sort((a,b) => a.step - b.step).map(e => `<tr class="border-b border-gray-50"><td class="px-2 py-1 font-mono">${e.step}</td><td class="px-2 py-1 font-mono">${fmtNum(e.pos)}</td><td class="px-2 py-1 font-mono">${fmtNum(e.rot)}</td></tr>`).join('')}</tbody>
+          </table></div>
+        </div>` : '<p class="text-xs text-gray-400">No eval results yet.</p>'}
+        ${m.checkpoints.length > 0 ? `
+        <div>
+          <h5 class="text-xs font-semibold text-gray-500 mb-2 uppercase">Checkpoints (${m.checkpoints.length})</h5>
+          <div class="flex flex-wrap gap-1">${m.checkpoints.map(c => `<span class="badge badge-gray text-xs">${c.path}</span>`).join('')}</div>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Charts ──
+let barChart, scatterChart, hparamChart;
+
+function renderCharts() {
+  const models = MODELS_DATA.models;
+  const withEval = models.filter(m => m.best_eval);
+
+  // Bar chart
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  if (barChart) barChart.destroy();
+  const barColors = withEval.map(m => m.action_encoding === 'absolute' ? 'rgba(59,130,246,0.8)' : 'rgba(249,115,22,0.8)');
+  const barBorders = withEval.map(m => m.action_encoding === 'absolute' ? 'rgb(59,130,246)' : 'rgb(249,115,22)');
+  barChart = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: withEval.map(m => m.id),
+      datasets: [{
+        label: 'Pos Loss',
+        data: withEval.map(m => m.best_eval.pos),
+        backgroundColor: barColors,
+        borderColor: barBorders,
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, title: { display: true, text: 'Pos Loss' } },
+        x: { ticks: { maxRotation: 45, minRotation: 0, font: { size: 10 } } }
+      }
+    }
+  });
+
+  // Scatter chart
+  const scatterCtx = document.getElementById('scatterChart').getContext('2d');
+  if (scatterChart) scatterChart.destroy();
+  const colors = ['#3b82f6','#f97316','#22c55e','#ef4444','#8b5cf6','#ec4899','#06b6d4'];
+  const modelsWithPoints = models.filter(m => m.all_eval_results.length >= 3);
+  const scatterDatasets = modelsWithPoints.map((m, i) => ({
+    label: m.id,
+    data: m.all_eval_results.map(e => ({ x: e.step, y: e.pos })),
+    backgroundColor: colors[i % colors.length],
+    borderColor: colors[i % colors.length],
+    pointRadius: 3,
+    pointHoverRadius: 6,
+    showLine: true,
+    tension: 0.1,
+    borderWidth: 1,
+    fill: false,
+  }));
+  scatterChart = new Chart(scatterCtx, {
+    type: 'scatter',
+    data: { datasets: scatterDatasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 }, padding: 8 } }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Training Steps' } },
+        y: { title: { display: true, text: 'Pos Loss' }, min: 0 }
+      }
+    }
+  });
+
+  // HParam chart - grouped bar
+  const hparamCtx = document.getElementById('hparamChart').getContext('2d');
+  if (hparamChart) hparamChart.destroy();
+  const hparamKeys = ['batch_size', 'learning_rate', 'iters', 'warmup_steps', 'freeze_steps'];
+  const hparamDatasets = models.map((m, i) => ({
+    label: m.id,
+    data: hparamKeys.map(k => {
+      let v = m.hyperparams[k];
+      if (k === 'learning_rate') return v * 10000; // scale for visibility
+      if (k === 'iters') return v / 1000; // scale to k
+      return v ?? 0;
+    }),
+    backgroundColor: colors[i % colors.length] + 'cc',
+    borderColor: colors[i % colors.length],
+    borderWidth: 1,
+    borderRadius: 3,
+  }));
+  hparamChart = new Chart(hparamCtx, {
+    type: 'bar',
+    data: { labels: hparamKeys.map(k => k === 'learning_rate' ? 'lr (×10⁻⁴)' : k === 'iters' ? 'iters (k)' : k), datasets: hparamDatasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, padding: 6 } } },
+      scales: {
+        y: { title: { display: true, text: 'Value (scaled)' } }
+      }
+    }
+  });
+}
+
+// ── Event handlers ──
+document.getElementById('encodingFilter').addEventListener('change', () => { renderTable(); });
+document.getElementById('modeFilter').addEventListener('change', () => { renderTable(); });
+document.getElementById('searchInput').addEventListener('input', () => { renderTable(); });
+
+document.querySelectorAll('th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.sort;
+    if (sortKey === key) sortAsc = !sortAsc;
+    else { sortKey = key; sortAsc = true; }
+    renderTable();
+  });
+});
+
+// ── Init ──
+renderSummary();
+renderTable();
+renderDetails();
+renderCharts();
+</script>
+</body>
+</html>
