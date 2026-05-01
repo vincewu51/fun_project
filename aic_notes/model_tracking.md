@@ -10,7 +10,7 @@
 | **v5** | v5-lora-r32-sub-abs-velmode | abs | 293K | LoRA r=32, vel mode | 30 | 15 | **hover** (abs/proprio bug) | 04-30 |
 | **v5b** | v5-lora-r32-sub-delta-posmode | delta | 293K | LoRA r=32, pose mode | 30 | 15 | training | 04-30 |
 | **v6** | v6-fullft-full-abs-jointlr | abs | 270K | Full FT, head=1e-4/vlm=1e-5 | 30 | 15 | - | 05-01 |
-| **v7** | v7-lora-full-delta-short8 | delta | 270K | LoRA r=8, num_actions=8 | 8 | 4 | done | 04-30 |
+| **v7** | v7-lora-full-delta-short8 | delta | 270K | LoRA r=8, num_actions=8 | 8 | 4 | -1.6 | 04-30 |
 | **v8** | v8-lora-r32-full-abs-velmode | abs | 270K | LoRA r=32, vel mode | 30 | 15 | done | 04-30 |
 | **v9** | v9-lora-r32-sub-abs-velmode-2stage | abs | 103K | LoRA r=32, 2-stage (freeze→full) | 30 | 15 | planned | 04-30 |
 
@@ -49,8 +49,7 @@ If v5b clears v1's 63/300 baseline, it confirms the capacity bump (r=32) and ful
 ### v6 — v6-fullft-full-abs-jointlr
 Full FT, abs encoding, joint LR. First non-LoRA arm; tests whether updating the VLM jointly (vs LoRA's frozen-VLM bias) helps tier-3 insertion. Branch/worktree `yf_v6-fullft-full-abs-jointlr`. Compute: Velda `anycloud-a100-1` pool (not 5080 — A100 keeps stock `xvla-stable` env, no Blackwell torch nightly needed). Data: `siyulw2025/cableholder-all` HF dataset → `~/aic_xvla_data/cableholder-all/` via `convert_lerobot_to_xvla.py`. Joint LR uses X-VLA's existing param-group split (`--learning_rate 1e-4 --learning_coef 0.1` → vlm=1e-5, head=1e-4) — no upstream patch needed. 20K iters, save_interval=1000.
 
-### v7 — v7-lora-full-delta-short8
-### v7 | v7-lora-full-delta-short8 | delta | 270K | LoRA r=8, num_actions=8 | 8 | 4 | done)
+
 Shorter horizon (8 actions), delta. Less open-loop drift.
 
 ### v8 — v8-lora-r32-full-abs-velmode (training)
@@ -73,6 +72,9 @@ LoRA r=32, absolute, velocity mode, full data. 144 MB. Loss 0.015 at 30K.
 **Gates (reuse v5 infra):** G1 dry train on `aic_data_one_ep`. G2 save-hook `pred_pos_std > 0.005` at every save. G3 sim dry-run at ckpt-3000 (note: this is ckpt-1000 INTO stage-2 — earlier sim check than v5). Auto-fallback: if stage-1 loss doesn't drop below stage-1 v5-equivalent (loss at iter 2000), abort and re-evaluate `freeze_steps`.
 
 **Success criterion:** median total ≥ v5 median + 5. If equal/worse, the soft-prompt-first recipe doesn't help on this embodiment and we stick with `freeze_steps=0` going forward.
+
+### v7 — v7-lora-full-delta-short8
+Shorter horizon (8 actions), delta. Score -1.6 (contact penalty). Moves better, reaches 9cm, but collides with task board.
 
 ## Naming Convention
 Format: v{number}-{method}-{data}-{encoding}[-{tag}]
