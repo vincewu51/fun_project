@@ -1,0 +1,6 @@
+{
+  "action_encoding": "absolute",
+  "mode": "peft",
+  "wandb_run_name": "v8-lora-r32-full-abs-velmode",
+  "num_actions": null
+}

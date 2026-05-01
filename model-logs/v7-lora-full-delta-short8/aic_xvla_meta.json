@@ -1,0 +1,6 @@
+{
+  "action_encoding": "delta",
+  "mode": "peft",
+  "wandb_run_name": "v7-lora-full-delta-short8",
+  "num_actions": 8
+}
