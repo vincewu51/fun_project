@@ -11,6 +11,7 @@
 | **v6** | v6-fullft-full-abs-jointlr | abs | 270K | Full FT, head=1e-4/vlm=1e-5 | 30 | 15 | ready | 05-01 |
 | **v7** | v7-lora-full-delta-short8 | delta | 270K | LoRA r=8, num_actions=8 | 8 | 4 | ready | 04-30 |
 | **v8** | v8-lora-r32-full-abs-velmode | abs | 270K | LoRA r=32, vel mode | 30 | 15 | done | 04-30 |
+| **v9** | v9-lora-r32-sub-abs-velmode-2stage | abs | 103K | LoRA r=32, 2-stage (freeze→full) | 30 | 15 | planned | 04-30 |
 
 ## Detailed Results
 
@@ -34,6 +35,24 @@ Shorter horizon (8 actions), delta. Less open-loop drift.
 
 ### v8 — v8-lora-r32-full-abs-velmode (trained)
 LoRA r=32, absolute, velocity mode, full data. 144 MB. Loss 0.015 at 30K.
+
+### v9 — v9-lora-r32-sub-abs-velmode-2stage (planned)
+**Goal:** follow the X-VLA fine-tuning recipe v1–v8 skipped. Same data/encoding/control as v5, but train in two stages per `peft_train.py:166-174`.
+
+**Why:** during `step < freeze_steps`, the trainer sets `vlm` and `transformer_core` LR to 0 and only updates `soft_prompts` + `action_heads` (the embodiment-specific bits). v5 ran `freeze_steps=0, warmup_steps=50, learning_coef=1.0` — soft prompts and backbone moved together from step 0, which is the opposite of the paper's recipe. Hypothesis: warming up the soft prompt against a frozen pretrained backbone first gives a cleaner adaptation signal before LoRA touches the core.
+
+**Setup (delta vs v5):**
+- `--freeze_steps 2000` (v5: 0). Stage-1 trains soft prompt + action heads only.
+- `--warmup_steps 2000` (v5: 50). Linear warmup AFTER unfreeze, per `linear_warmup_cosine(step, freeze_steps, warmup_steps, ...)`.
+- `--learning_coef 0.1` (v5: 1.0). Matches the README's recommended VLM/soft-prompt LR ratio.
+- `--iters 30000`, LoRA r=32/α=64, lr=5e-4, abs encoding, velocity cmd mode — all identical to v5 so the 2-stage recipe is the only variable.
+- Data: `aic-data-sub-v2` (103K), same as v5.
+
+**Expected schedule:** steps 0–2000 soft-prompt-only at lr=5e-5; steps 2000–4000 full-model warmup ramp; 4000–30000 cosine decay to 5% of base.
+
+**Gates (reuse v5 infra):** G1 dry train on `aic_data_one_ep`. G2 save-hook `pred_pos_std > 0.005` at every save. G3 sim dry-run at ckpt-3000 (note: this is ckpt-1000 INTO stage-2 — earlier sim check than v5). Auto-fallback: if stage-1 loss doesn't drop below stage-1 v5-equivalent (loss at iter 2000), abort and re-evaluate `freeze_steps`.
+
+**Success criterion:** median total ≥ v5 median + 5. If equal/worse, the soft-prompt-first recipe doesn't help on this embodiment and we stick with `freeze_steps=0` going forward.
 
 ## Naming Convention
 Format: v{number}-{method}-{data}-{encoding}[-{tag}]
