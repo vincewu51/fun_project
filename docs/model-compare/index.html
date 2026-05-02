@@ -130,7 +130,7 @@ tailwind.config = {
 // ── Embedded data ──
 const MODELS_DATA = {"models": [{"id": "v7-lora-full-delta-short8", "action_encoding": "delta", "mode": "peft", "num_actions": 8, "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 12000, "path": "ckpt-12000", "is_lora": true, "merged": false}, {"step": 14000, "path": "ckpt-14000", "is_lora": true, "merged": false}, {"step": 16000, "path": "ckpt-16000", "is_lora": true, "merged": false}, {"step": 18000, "path": "ckpt-18000", "is_lora": true, "merged": false}, {"step": 2000, "path": "ckpt-2000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 22000, "path": "ckpt-22000", "is_lora": true, "merged": false}, {"step": 24000, "path": "ckpt-24000", "is_lora": true, "merged": false}, {"step": 26000, "path": "ckpt-26000", "is_lora": true, "merged": false}, {"step": 28000, "path": "ckpt-28000", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}, {"step": 32000, "path": "ckpt-32000", "is_lora": true, "merged": false}, {"step": 34000, "path": "ckpt-34000", "is_lora": true, "merged": false}, {"step": 36000, "path": "ckpt-36000", "is_lora": true, "merged": false}, {"step": 38000, "path": "ckpt-38000", "is_lora": true, "merged": false}, {"step": 4000, "path": "ckpt-4000", "is_lora": true, "merged": false}, {"step": 40000, "path": "ckpt-40000", "is_lora": true, "merged": false}, {"step": 6000, "path": "ckpt-6000", "is_lora": true, "merged": false}, {"step": 8000, "path": "ckpt-8000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/v7-lora-full-delta-short8", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 2, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 40000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 2000, "log_interval": 20, "seed": 0, "freeze_vlm": false, "num_actions": 8}, "best_eval": {"step": 27000, "pos": 0.0006, "rot": 0.0004}, "all_eval_results": [{"step": 1000, "pos": 0.0221, "rot": 0.0161}, {"step": 2000, "pos": 0.0234, "rot": 0.0054}, {"step": 3000, "pos": 0.0147, "rot": 0.0029}, {"step": 4000, "pos": 0.0077, "rot": 0.0037}, {"step": 5000, "pos": 0.0021, "rot": 0.0071}, {"step": 6000, "pos": 0.0029, "rot": 0.0035}, {"step": 7000, "pos": 0.0123, "rot": 0.0057}, {"step": 8000, "pos": 0.0051, "rot": 0.0025}, {"step": 9000, "pos": 0.0124, "rot": 0.0044}, {"step": 10000, "pos": 0.0048, "rot": 0.0043}, {"step": 11000, "pos": 0.0015, "rot": 0.0058}, {"step": 12000, "pos": 0.0059, "rot": 0.0053}, {"step": 13000, "pos": 0.0033, "rot": 0.0026}, {"step": 14000, "pos": 0.0085, "rot": 0.0039}, {"step": 15000, "pos": 0.0062, "rot": 0.0057}, {"step": 16000, "pos": 0.0024, "rot": 0.0022}, {"step": 17000, "pos": 0.0083, "rot": 0.0023}, {"step": 18000, "pos": 0.0032, "rot": 0.0008}, {"step": 19000, "pos": 0.0055, "rot": 0.0005}, {"step": 20000, "pos": 0.0117, "rot": 0.0015}, {"step": 21000, "pos": 0.0048, "rot": 0.0018}, {"step": 22000, "pos": 0.0037, "rot": 0.0016}, {"step": 23000, "pos": 0.003, "rot": 0.0005}, {"step": 24000, "pos": 0.0021, "rot": 0.0004}, {"step": 25000, "pos": 0.0015, "rot": 0.0005}, {"step": 26000, "pos": 0.0017, "rot": 0.0008}, {"step": 27000, "pos": 0.0006, "rot": 0.0004}, {"step": 28000, "pos": 0.0036, "rot": 0.0001}, {"step": 29000, "pos": 0.0015, "rot": 0.0004}, {"step": 30000, "pos": 0.0014, "rot": 0.0003}, {"step": 31000, "pos": 0.001, "rot": 0.0007}, {"step": 32000, "pos": 0.0014, "rot": 0.0006}, {"step": 33000, "pos": 0.0015, "rot": 0.0004}, {"step": 34000, "pos": 0.0013, "rot": 0.0001}, {"step": 35000, "pos": 0.0017, "rot": 0.0004}, {"step": 36000, "pos": 0.0019, "rot": 0.0002}, {"step": 37000, "pos": 0.0009, "rot": 0.0001}, {"step": 38000, "pos": 0.0008, "rot": 0.0002}, {"step": 39000, "pos": 0.0013, "rot": 0.0001}], "training_complete": true, "registry_status": "trained", "registry_method": "LoRA r=8, num_actions=8", "registry_data": "full", "registry_score": "-1.6", "registry_notes": "Reaches 9cm but collides with task board.", "registry_version": "v7", "superseded_by": null, "supersedes": null}, {"id": "v10-lora-full-abs-continued", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 5000, "path": "ckpt-5000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "/home/yifeng/aic_xvla_data/xvla_absolute/ckpt-20000_merged", "output_dir": "/home/yifeng/aic_xvla_data/xvla_absolute_continued", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 2, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 20000, "freeze_steps": 200, "warmup_steps": 50, "use_cosine_decay": false, "min_lr_ratio": 0.1, "save_interval": 5000, "log_interval": 20, "seed": 0}, "best_eval": {"step": 6000, "pos": 0.0041, "rot": 0.0003}, "all_eval_results": [{"step": 1000, "pos": 0.0222, "rot": 0.0017}, {"step": 2000, "pos": 0.0089, "rot": 0.0004}, {"step": 3000, "pos": 0.0251, "rot": 0.0016}, {"step": 4000, "pos": 0.0305, "rot": 0.002}, {"step": 5000, "pos": 0.0593, "rot": 0.001}, {"step": 6000, "pos": 0.0041, "rot": 0.0003}, {"step": 7000, "pos": 0.0163, "rot": 0.0012}, {"step": 8000, "pos": 0.0266, "rot": 0.0009}, {"step": 9000, "pos": 0.0199, "rot": 0.0005}, {"step": 10000, "pos": 0.1576, "rot": 0.0023}, {"step": 11000, "pos": 0.18, "rot": 0.0009}, {"step": 12000, "pos": 0.0522, "rot": 0.0005}, {"step": 13000, "pos": 0.0725, "rot": 0.0011}, {"step": 14000, "pos": 0.0175, "rot": 0.0013}, {"step": 15000, "pos": 0.0064, "rot": 0.001}, {"step": 16000, "pos": 0.0187, "rot": 0.0027}, {"step": 17000, "pos": 0.0085, "rot": 0.0013}, {"step": 18000, "pos": 0.0269, "rot": 0.0004}, {"step": 19000, "pos": 0.007, "rot": 0.0008}], "training_complete": true, "registry_status": "trained", "registry_method": "LoRA r=8, continued from v2", "registry_data": "full", "registry_score": null, "registry_notes": "Continued from v2 merged weights.", "registry_version": "v10", "superseded_by": null, "supersedes": null}, {"id": "v8-lora-r32-full-abs-velmode", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [{"step": 10500, "path": "ckpt-10500", "is_lora": true, "merged": false}, {"step": 12000, "path": "ckpt-12000", "is_lora": true, "merged": false}, {"step": 13500, "path": "ckpt-13500", "is_lora": true, "merged": false}, {"step": 1500, "path": "ckpt-1500", "is_lora": true, "merged": false}, {"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 16500, "path": "ckpt-16500", "is_lora": true, "merged": false}, {"step": 18000, "path": "ckpt-18000", "is_lora": true, "merged": false}, {"step": 19500, "path": "ckpt-19500", "is_lora": true, "merged": false}, {"step": 21000, "path": "ckpt-21000", "is_lora": true, "merged": false}, {"step": 22500, "path": "ckpt-22500", "is_lora": true, "merged": false}, {"step": 24000, "path": "ckpt-24000", "is_lora": true, "merged": false}, {"step": 25500, "path": "ckpt-25500", "is_lora": true, "merged": false}, {"step": 27000, "path": "ckpt-27000", "is_lora": true, "merged": false}, {"step": 28500, "path": "ckpt-28500", "is_lora": true, "merged": false}, {"step": 3000, "path": "ckpt-3000", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}, {"step": 4500, "path": "ckpt-4500", "is_lora": true, "merged": false}, {"step": 6000, "path": "ckpt-6000", "is_lora": true, "merged": false}, {"step": 7500, "path": "ckpt-7500", "is_lora": true, "merged": false}, {"step": 9000, "path": "ckpt-9000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/v8-lora-r32-full-abs-velmode", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 1, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 30000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 1500, "log_interval": 20, "seed": 0, "freeze_vlm": false, "lora_r": 32, "lora_alpha": 64}, "best_eval": {"step": 21000, "pos": 0.0052, "rot": 0.0005}, "all_eval_results": [{"step": 1000, "pos": 0.5118, "rot": 0.0057}, {"step": 2000, "pos": 0.4405, "rot": 0.0229}, {"step": 3000, "pos": 0.0713, "rot": 0.033}, {"step": 4000, "pos": 1.1026, "rot": 0.0054}, {"step": 5000, "pos": 1.4872, "rot": 0.0029}, {"step": 6000, "pos": 0.2191, "rot": 0.0062}, {"step": 7000, "pos": 0.478, "rot": 0.0174}, {"step": 8000, "pos": 1.431, "rot": 0.0064}, {"step": 9000, "pos": 0.2977, "rot": 0.0055}, {"step": 10000, "pos": 0.0603, "rot": 0.0018}, {"step": 11000, "pos": 0.2271, "rot": 0.0086}, {"step": 12000, "pos": 0.5853, "rot": 0.0055}, {"step": 13000, "pos": 0.1429, "rot": 0.003}, {"step": 14000, "pos": 0.3994, "rot": 0.0016}, {"step": 15000, "pos": 0.0242, "rot": 0.0023}, {"step": 16000, "pos": 0.0321, "rot": 0.0012}, {"step": 17000, "pos": 0.0591, "rot": 0.0013}, {"step": 18000, "pos": 0.0092, "rot": 0.0008}, {"step": 19000, "pos": 0.0093, "rot": 0.0002}, {"step": 20000, "pos": 0.0894, "rot": 0.0005}, {"step": 21000, "pos": 0.0052, "rot": 0.0005}, {"step": 22000, "pos": 0.0084, "rot": 0.0006}, {"step": 23000, "pos": 0.0144, "rot": 0.0005}, {"step": 24000, "pos": 0.0136, "rot": 0.0003}, {"step": 25000, "pos": 0.0091, "rot": 0.0008}, {"step": 26000, "pos": 0.0206, "rot": 0.0002}, {"step": 27000, "pos": 0.0153, "rot": 0.0002}, {"step": 28000, "pos": 0.0181, "rot": 0.0003}, {"step": 29000, "pos": 0.0297, "rot": 0.0009}], "training_complete": true, "registry_status": "trained", "registry_method": "LoRA r=32, vel mode", "registry_data": "full", "registry_score": null, "registry_notes": "", "registry_version": "v8", "superseded_by": null, "supersedes": null}, {"id": "v3-lora-sub-abs", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}, {"step": 40000, "path": "ckpt-40000", "is_lora": true, "merged": false}, {"step": 50000, "path": "ckpt-50000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/xvla_lora_sub", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta_sub2.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta_sub2.json", "eval_interval": 1000, "batch_size": 2, "learning_rate": 0.0005, "learning_coef": 0.1, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 50000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 10000, "log_interval": 20, "seed": 0, "freeze_vlm": false}, "best_eval": {"step": 32000, "pos": 0.0055, "rot": 0.0026}, "all_eval_results": [{"step": 1000, "pos": 0.206, "rot": 0.0066}, {"step": 2000, "pos": 0.3079, "rot": 0.0094}, {"step": 3000, "pos": 0.0252, "rot": 0.002}, {"step": 4000, "pos": 0.1129, "rot": 0.0048}, {"step": 5000, "pos": 0.1807, "rot": 0.0015}, {"step": 6000, "pos": 0.0616, "rot": 0.002}, {"step": 7000, "pos": 0.1053, "rot": 0.0028}, {"step": 8000, "pos": 0.2072, "rot": 0.0018}, {"step": 9000, "pos": 0.0348, "rot": 0.0019}, {"step": 10000, "pos": 0.0559, "rot": 0.0005}, {"step": 11000, "pos": 0.0311, "rot": 0.0024}, {"step": 12000, "pos": 0.2723, "rot": 0.0027}, {"step": 13000, "pos": 0.0723, "rot": 0.0007}, {"step": 14000, "pos": 0.2426, "rot": 0.0015}, {"step": 15000, "pos": 0.1088, "rot": 0.0012}, {"step": 16000, "pos": 0.0402, "rot": 0.0009}, {"step": 17000, "pos": 0.2817, "rot": 0.0034}, {"step": 18000, "pos": 0.0395, "rot": 0.0015}, {"step": 19000, "pos": 0.1126, "rot": 0.0011}, {"step": 20000, "pos": 0.0354, "rot": 0.0019}, {"step": 21000, "pos": 0.0641, "rot": 0.0016}, {"step": 22000, "pos": 0.0549, "rot": 0.0014}, {"step": 23000, "pos": 0.0558, "rot": 0.0004}, {"step": 24000, "pos": 0.0975, "rot": 0.0037}, {"step": 25000, "pos": 0.1057, "rot": 0.0006}, {"step": 26000, "pos": 0.0611, "rot": 0.0029}, {"step": 27000, "pos": 0.0402, "rot": 0.0024}, {"step": 28000, "pos": 0.0466, "rot": 0.0006}, {"step": 29000, "pos": 0.0347, "rot": 0.0035}, {"step": 30000, "pos": 0.0349, "rot": 0.001}, {"step": 31000, "pos": 0.0528, "rot": 0.0008}, {"step": 32000, "pos": 0.0055, "rot": 0.0026}, {"step": 33000, "pos": 0.0077, "rot": 0.0009}, {"step": 34000, "pos": 0.0281, "rot": 0.0025}, {"step": 35000, "pos": 0.0209, "rot": 0.0021}, {"step": 36000, "pos": 0.033, "rot": 0.0011}, {"step": 37000, "pos": 0.0379, "rot": 0.0017}, {"step": 38000, "pos": 0.0348, "rot": 0.0019}, {"step": 39000, "pos": 0.0526, "rot": 0.0011}, {"step": 40000, "pos": 0.0392, "rot": 0.0013}, {"step": 41000, "pos": 0.029, "rot": 0.0008}, {"step": 42000, "pos": 0.046, "rot": 0.0004}, {"step": 43000, "pos": 0.0129, "rot": 0.0008}, {"step": 44000, "pos": 0.0117, "rot": 0.0007}, {"step": 45000, "pos": 0.0299, "rot": 0.0007}, {"step": 46000, "pos": 0.0254, "rot": 0.0004}, {"step": 47000, "pos": 0.0174, "rot": 0.0009}, {"step": 48000, "pos": 0.0112, "rot": 0.0008}, {"step": 49000, "pos": 0.0164, "rot": 0.0005}], "training_complete": true, "registry_status": "trained", "registry_method": "LoRA r=8, coef=0.1", "registry_data": "sub", "registry_score": null, "registry_notes": "Robot stuck.", "registry_version": "v3", "superseded_by": null, "supersedes": null}, {"id": "v2-lora-full-abs", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [{"step": 1000, "path": "ckpt-1000", "is_lora": true, "merged": false}, {"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 2000, "path": "ckpt-2000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000_merged", "is_lora": false, "merged": true}, {"step": 3000, "path": "ckpt-3000", "is_lora": true, "merged": false}, {"step": 5000, "path": "ckpt-5000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/xvla_absolute", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 1, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 3000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": false, "min_lr_ratio": 0.1, "save_interval": 1000, "log_interval": 20, "seed": 0}, "best_eval": {"step": 16000, "pos": 0.0089, "rot": 0.0008}, "all_eval_results": [{"step": 1000, "pos": 0.0765, "rot": 0.0341}, {"step": 2000, "pos": 0.0868, "rot": 0.0196}, {"step": 1000, "pos": 0.1616, "rot": 0.0409}, {"step": 2000, "pos": 0.0301, "rot": 0.0023}, {"step": 3000, "pos": 0.0222, "rot": 0.0007}, {"step": 4000, "pos": 0.1444, "rot": 0.0032}, {"step": 5000, "pos": 0.0352, "rot": 0.0092}, {"step": 6000, "pos": 0.0138, "rot": 0.0036}, {"step": 7000, "pos": 0.0123, "rot": 0.0003}, {"step": 8000, "pos": 0.0486, "rot": 0.0028}, {"step": 9000, "pos": 0.1041, "rot": 0.0006}, {"step": 10000, "pos": 0.2063, "rot": 0.0059}, {"step": 11000, "pos": 0.2742, "rot": 0.0009}, {"step": 12000, "pos": 0.1172, "rot": 0.0011}, {"step": 13000, "pos": 0.128, "rot": 0.0008}, {"step": 14000, "pos": 0.0122, "rot": 0.0006}, {"step": 15000, "pos": 0.2038, "rot": 0.0039}, {"step": 16000, "pos": 0.0089, "rot": 0.0008}, {"step": 17000, "pos": 0.0153, "rot": 0.0006}, {"step": 18000, "pos": 0.0384, "rot": 0.0045}, {"step": 19000, "pos": 0.0203, "rot": 0.0014}], "training_complete": true, "registry_status": "trained", "registry_method": "LoRA r=8, lr=5e-4", "registry_data": "full", "registry_score": "63/300", "registry_notes": "", "registry_version": "v2", "superseded_by": null, "supersedes": null}, {"id": "v4-fullft-full-abs", "action_encoding": "absolute", "mode": "full", "num_actions": null, "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": false, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": false, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/xvla_full_ft", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "batch_size": 2, "learning_rate": 0.0001, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 100000, "freeze_steps": 1000, "warmup_steps": 2000, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 10000, "log_interval": 20, "seed": 0, "freeze_vlm": true}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "trained", "registry_method": "Full FT, frozen VLM", "registry_data": "full", "registry_score": null, "registry_notes": "", "registry_version": "v4", "superseded_by": null, "supersedes": null}, {"id": "v6-fullft-full-abs-jointlr", "action_encoding": "absolute", "mode": "full", "num_actions": null, "checkpoints": [], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/v6-fullft-full-abs-jointlr", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "batch_size": 1, "learning_rate": 0.0001, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 20000, "freeze_steps": 0, "warmup_steps": 500, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 1000, "log_interval": 20, "seed": 0, "freeze_vlm": false, "vlm_lr": 1e-05, "head_lr": 0.0001}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "trained", "registry_method": "Full FT, head=1e-4/vlm=1e-5", "registry_data": "full", "registry_score": null, "registry_notes": "", "registry_version": "v6", "superseded_by": null, "supersedes": null}, {"id": "v11-lora-r32-sub-delta", "action_encoding": "delta", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "training", "registry_method": "LoRA r=32, pose mode", "registry_data": "sub", "registry_score": null, "registry_notes": "Delta re-run of v5. Fix for v5 hover bug.", "registry_version": "v11", "superseded_by": null, "supersedes": "v5-lora-r32-sub-abs-velmode"}, {"id": "v1-lora-full-delta", "action_encoding": "delta", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "trained", "registry_method": "LoRA r=8, lr=5e-4", "registry_data": "full", "registry_score": "63/300", "registry_notes": "Moves but doesn't insert.", "registry_version": "v1", "superseded_by": null, "supersedes": null}, {"id": "v5-lora-r32-sub-abs-velmode", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "failed", "registry_method": "LoRA r=32, vel mode", "registry_data": "sub", "registry_score": null, "registry_notes": "Hover bug \u2014 absolute/proprio mismatch.", "registry_version": "v5", "superseded_by": "v11-lora-r32-sub-delta", "supersedes": null}, {"id": "v9-lora-r32-sub-abs-velmode-2stage", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "planned", "registry_method": "LoRA r=32, 2-stage", "registry_data": "sub", "registry_score": null, "registry_notes": "2-stage freeze\u2192full recipe.", "registry_version": "v9", "superseded_by": null, "supersedes": null}]};
 
-const GENERATED_AT = "2026-05-01T21:53:45.957900+00:00";
+const GENERATED_AT = "2026-05-02T04:19:16.383867+00:00";
 
 // ── Derived fields ──
 function getArch(model) {
@@ -368,107 +368,111 @@ function renderDetails() {
   }).join('');
 }
 
-// ── Charts ──
-let barChart, scatterChart, hparamChart;
+  // ── Charts ──
+  let barChart, scatterChart, hparamChart;
 
-function renderCharts() {
-  const models = MODELS_DATA.models;
-  const withEval = models.filter(m => m.best_eval);
+  const chartColors = ['#3b82f6','#f97316','#22c55e','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#14b8a6','#a855f7','#f43f5e'];
 
-  // Bar chart
-  const barCtx = document.getElementById('barChart').getContext('2d');
-  if (barChart) barChart.destroy();
-  const barColors = withEval.map(m => m.action_encoding === 'absolute' ? 'rgba(59,130,246,0.8)' : 'rgba(249,115,22,0.8)');
-  const barBorders = withEval.map(m => m.action_encoding === 'absolute' ? 'rgb(59,130,246)' : 'rgb(249,115,22)');
-  barChart = new Chart(barCtx, {
-    type: 'bar',
-    data: {
-      labels: withEval.map(m => m.id),
-      datasets: [{
-        label: 'Pos Loss',
-        data: withEval.map(m => m.best_eval.pos),
-        backgroundColor: barColors,
-        borderColor: barBorders,
-        borderWidth: 1,
-        borderRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, title: { display: true, text: 'Pos Loss' } },
-        x: { ticks: { maxRotation: 45, minRotation: 0, font: { size: 10 } } }
-      }
-    }
-  });
+  function renderCharts() {
+    const models = MODELS_DATA.models;
 
-  // Scatter chart
-  const scatterCtx = document.getElementById('scatterChart').getContext('2d');
-  if (scatterChart) scatterChart.destroy();
-  const colors = ['#3b82f6','#f97316','#22c55e','#ef4444','#8b5cf6','#ec4899','#06b6d4'];
-  const modelsWithPoints = models.filter(m => m.all_eval_results.length >= 3);
-  const scatterDatasets = modelsWithPoints.map((m, i) => ({
-    label: m.id,
-    data: m.all_eval_results.map(e => ({ x: e.step, y: e.pos })),
-    backgroundColor: colors[i % colors.length],
-    borderColor: colors[i % colors.length],
-    pointRadius: 3,
-    pointHoverRadius: 6,
-    showLine: true,
-    tension: 0.1,
-    borderWidth: 1,
-    fill: false,
-  }));
-  scatterChart = new Chart(scatterCtx, {
-    type: 'scatter',
-    data: { datasets: scatterDatasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 }, padding: 8 } }
+    // Bar chart - all models, gray for no-data
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    if (barChart) barChart.destroy();
+    const barData = models.map(m => m.best_eval ? m.best_eval.pos : null);
+    const barColors = models.map(m => {
+      if (!m.best_eval) return 'rgba(209,213,219,0.5)';
+      return m.action_encoding === 'absolute' ? 'rgba(59,130,246,0.8)' : 'rgba(249,115,22,0.8)';
+    });
+    barChart = new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: models.map(m => m.id),
+        datasets: [{
+          label: 'Pos Loss',
+          data: barData,
+          backgroundColor: barColors,
+          borderRadius: 4,
+        }]
       },
-      scales: {
-        x: { title: { display: true, text: 'Training Steps' } },
-        y: { title: { display: true, text: 'Pos Loss' }, min: 0 }
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ctx.raw == null ? 'No eval data' : 'pos=' + ctx.raw } }
+        },
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: 'Pos Loss' } },
+          x: { ticks: { maxRotation: 45, minRotation: 0, font: { size: 9 } } }
+        }
       }
-    }
-  });
+    });
 
-  // HParam chart - grouped bar
-  const hparamCtx = document.getElementById('hparamChart').getContext('2d');
-  if (hparamChart) hparamChart.destroy();
-  const hparamKeys = ['batch_size', 'learning_rate', 'iters', 'warmup_steps', 'freeze_steps'];
-  const hparamDatasets = models.map((m, i) => ({
-    label: m.id,
-    data: hparamKeys.map(k => {
-      let v = m.hyperparams[k];
-      if (k === 'learning_rate') return v * 10000; // scale for visibility
-      if (k === 'iters') return v / 1000; // scale to k
-      return v ?? 0;
-    }),
-    backgroundColor: colors[i % colors.length] + 'cc',
-    borderColor: colors[i % colors.length],
-    borderWidth: 1,
-    borderRadius: 3,
-  }));
-  hparamChart = new Chart(hparamCtx, {
-    type: 'bar',
-    data: { labels: hparamKeys.map(k => k === 'learning_rate' ? 'lr (×10⁻⁴)' : k === 'iters' ? 'iters (k)' : k), datasets: hparamDatasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, padding: 6 } } },
-      scales: {
-        y: { title: { display: true, text: 'Value (scaled)' } }
+    // Scatter chart - eval progression + registry score markers
+    const scatterCtx = document.getElementById('scatterChart').getContext('2d');
+    if (scatterChart) scatterChart.destroy();
+    const modelsWithPoints = models.filter(m => m.all_eval_results.length >= 3);
+    const scatterDatasets = modelsWithPoints.map((m, i) => ({
+      label: m.id,
+      data: m.all_eval_results.map(e => ({ x: e.step, y: e.pos })),
+      backgroundColor: chartColors[i % chartColors.length],
+      borderColor: chartColors[i % chartColors.length],
+      pointRadius: 3, pointHoverRadius: 6,
+      showLine: true, tension: 0.1, borderWidth: 1, fill: false,
+    }));
+    const modelsWithScore = models.filter(m => !m.best_eval && m.registry_score);
+    modelsWithScore.forEach((m, i) => {
+      const s = parseFloat(m.registry_score);
+      if (!isNaN(s)) scatterDatasets.push({
+        label: m.id + ' (score)',
+        data: [{ x: 0, y: s }],
+        backgroundColor: chartColors[(modelsWithPoints.length + i) % chartColors.length],
+        pointRadius: 6, pointStyle: 'triangle',
+      });
+    });
+    scatterChart = new Chart(scatterCtx, {
+      type: 'scatter',
+      data: { datasets: scatterDatasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 9 }, padding: 6 } }
+        },
+        scales: {
+          x: { title: { display: true, text: 'Training Steps' } },
+          y: { title: { display: true, text: 'Pos Loss' }, min: 0 }
+        }
       }
-    }
-  });
-}
+    });
 
-// ── Event handlers ──
+    // HParam chart - only models with hyperparams
+    const hparamCtx = document.getElementById('hparamChart').getContext('2d');
+    if (hparamChart) hparamChart.destroy();
+    const hparamKeys = ['batch_size', 'learning_rate', 'iters', 'warmup_steps', 'freeze_steps'];
+    const modelsWithHp = models.filter(m => Object.keys(m.hyperparams).length > 0);
+    const hparamDatasets = modelsWithHp.map((m, i) => ({
+      label: m.id,
+      data: hparamKeys.map(k => {
+        let v = m.hyperparams[k];
+        if (v == null && m.train_params) v = m.train_params[k];
+        if (k === 'learning_rate') return v * 10000;
+        if (k === 'iters') return v / 1000;
+        return v ?? 0;
+      }),
+      backgroundColor: chartColors[i % chartColors.length] + 'cc',
+      borderColor: chartColors[i % chartColors.length],
+      borderWidth: 1, borderRadius: 3,
+    }));
+    hparamChart = new Chart(hparamCtx, {
+      type: 'bar',
+      data: { labels: hparamKeys.map(k => k === 'learning_rate' ? 'lr (x10-4)' : k === 'iters' ? 'iters (k)' : k), datasets: hparamDatasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, padding: 6 } } },
+        scales: { y: { title: { display: true, text: 'Value (scaled)' } } }
+      }
+    });
+  }// ── Event handlers ──
 document.getElementById('encodingFilter').addEventListener('change', () => { renderTable(); });
 document.getElementById('modeFilter').addEventListener('change', () => { renderTable(); });
 document.getElementById('searchInput').addEventListener('input', () => { renderTable(); });
