@@ -3,494 +3,544 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>X-VLA Model Comparison</title>
+<title>X-VLA Model Lab</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script>
 tailwind.config = {
   theme: {
     extend: {
-      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+      fontFamily: { sans: ['Outfit', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+      colors: { surface: { DEFAULT: '#0f172a', card: '#1e293b', hover: '#334155' } },
     }
   }
 }
 </script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-  .badge { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium; }
-  .badge-blue { @apply bg-blue-100 text-blue-800; }
-  .badge-orange { @apply bg-orange-100 text-orange-800; }
-  .badge-green { @apply bg-green-100 text-green-800; }
-  .badge-gray { @apply bg-gray-100 text-gray-600; }
-  .badge-yellow { @apply bg-yellow-100 text-yellow-800; }
-  .sort-asc::after { content: ' ▲'; font-size: 0.65rem; }
-  .sort-desc::after { content: ' ▼'; font-size: 0.65rem; }
-  .best-row { @apply bg-green-50 border-l-4 border-l-green-500; }
-  .hover-row:hover { @apply bg-gray-50; }
-  .card { @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6; }
-  .detail-grid { display: none; }
-  .detail-grid.open { display: table-row; }
-  tr.best-row td:first-child { padding-left: 12px; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulse-glow { 0%,100% { box-shadow:0 0 8px rgba(52,211,153,0.2); } 50% { box-shadow:0 0 20px rgba(52,211,153,0.4); } }
+  @keyframes slideDown { from { opacity:0; max-height:0; } to { opacity:1; max-height:800px; } }
+  @keyframes drawLine { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
+  .anim-in { animation: fadeIn 0.5s ease-out both; }
+  .anim-in-d1 { animation-delay:0.05s; } .anim-in-d2 { animation-delay:0.1s; } .anim-in-d3 { animation-delay:0.15s; }
+  .anim-in-d4 { animation-delay:0.2s; } .anim-in-d5 { animation-delay:0.25s; }
+  .detail-panel { display:none; }
+  .detail-panel.open { display:block; animation: slideDown 0.3s ease-out; }
+  .timeline-node { transition: all 0.2s ease; }
+  .timeline-node:hover { transform: scale(1.25); z-index:10; }
+  .timeline-edge { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: drawLine 1s ease-out 0.5s forwards; }
+  .hover-card { transition: all 0.15s ease; }
+  .hover-card:hover { background: rgba(51,65,85,0.5); }
+  .sort-asc::after { content:' ▲'; font-size:0.6rem; opacity:0.7; }
+  .sort-desc::after { content:' ▼'; font-size:0.6rem; opacity:0.7; }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background: #1e293b; }
+  ::-webkit-scrollbar-thumb { background: #475569; border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+  .text-balance { text-wrap: balance; }
 </style>
 </head>
-<body class="bg-gray-50 font-sans text-gray-900 antialiased">
+<body class="bg-surface text-slate-200 font-sans antialiased">
 
-<!-- Header -->
-<header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight text-gray-900">X-VLA Model Comparison</h1>
-        <p class="text-sm text-gray-500 mt-1">Training run tracking &amp; evaluation dashboard</p>
+<div class="min-h-screen" style="background:linear-gradient(180deg,#0f172a 0%,#0b1120 50%,#0f172a 100%)">
+
+<!-- HERO -->
+<header class="sticky top-0 z-40 border-b border-slate-800/80 backdrop-blur-xl bg-surface/90">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-14">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-xs font-bold text-white">X</div>
+        <h1 class="text-base font-semibold text-white tracking-tight">X-VLA Model Lab</h1>
+        <span class="hidden sm:inline text-xs text-slate-500 font-mono">v2</span>
       </div>
-      <div class="text-right text-xs text-gray-400">
-        <span id="genTime">—</span>
+      <div class="flex items-center gap-4 text-xs">
+        <div id="heroStats" class="flex items-center gap-3 text-slate-400"></div>
+        <span id="genTime" class="text-slate-600 font-mono hidden md:inline"></span>
       </div>
     </div>
   </div>
 </header>
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-<!-- Summary Cards -->
-<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="summaryCards"></section>
+<!-- BEST MODEL BANNER -->
+<section id="bestBanner" class="anim-in anim-in-d1"></section>
 
-<!-- Controls -->
-<section class="card">
-  <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-    <div class="flex items-center gap-3">
-      <label class="text-sm font-medium text-gray-600">Filter</label>
-      <select id="encodingFilter" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-        <option value="all">All Encodings</option>
-        <option value="absolute">Absolute</option>
-        <option value="delta">Delta</option>
-      </select>
-      <select id="modeFilter" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-        <option value="all">All Arch</option>
-        <option value="peft">LoRA</option>
-        <option value="full">Full FT</option>
-      </select>
+<!-- TIMELINE -->
+<section id="timelineSection" class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4 sm:p-5 anim-in anim-in-d2">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Research Trajectory</h2>
+    <div class="flex gap-3 text-[10px] text-slate-500">
+      <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>delta</span>
+      <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-sky-400"></span>abs</span>
+      <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded border border-slate-500"></span>planned</span>
     </div>
-    <div class="relative w-full sm:w-64">
-      <input type="text" id="searchInput" placeholder="Search models..." class="w-full text-sm border border-gray-300 rounded-lg pl-9 pr-3 py-1.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-      <svg class="absolute left-2.5 top-2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+  </div>
+  <div id="timelineTrack" class="overflow-x-auto pb-1" style="scrollbar-width:thin"></div>
+</section>
+
+<!-- FILTERS -->
+<section class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-3 sm:p-4 anim-in anim-in-d3">
+  <div class="flex flex-wrap items-center gap-2">
+    <select id="encFilter" class="text-xs bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-300 outline-none focus:border-slate-500"><option value="all">All Enc</option><option value="delta">Delta</option><option value="absolute">Absolute</option></select>
+    <select id="archFilter" class="text-xs bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-300 outline-none focus:border-slate-500"><option value="all">All Arch</option><option value="peft">LoRA</option><option value="full">Full FT</option></select>
+    <select id="dataFilter" class="text-xs bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-300 outline-none focus:border-slate-500"><option value="all">All Data</option><option value="full">Full</option><option value="sub">Sub</option></select>
+    <select id="statusFilter" class="text-xs bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-300 outline-none focus:border-slate-500"><option value="all">All Status</option><option value="trained">Trained</option><option value="training">Training</option><option value="planned">Planned</option><option value="failed">Failed</option></select>
+    <div class="relative flex-1 min-w-[140px]">
+      <input id="searchInput" type="text" placeholder="Search models..." class="w-full text-xs bg-slate-800 border border-slate-700 rounded-lg pl-7 pr-2.5 py-1.5 text-slate-300 outline-none focus:border-slate-500 placeholder:text-slate-600">
+      <svg class="absolute left-2 top-1.5 w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
     </div>
+    <span id="resultCount" class="text-[10px] text-slate-600 font-mono ml-auto"></span>
   </div>
 </section>
 
-<!-- Comparison Table -->
-<section class="card overflow-x-auto p-0" id="tableSection">
+<!-- TABLE -->
+<section class="bg-slate-900/50 border border-slate-800/60 rounded-xl overflow-hidden anim-in anim-in-d4">
   <div class="overflow-x-auto">
-    <table class="w-full text-sm" id="modelTable">
-      <thead class="bg-gray-50 border-b border-gray-200 text-left">
-        <tr>
-          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="id">Model</th>
-          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="arch">Arch</th>
-          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="encoding">Enc</th>
-          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="data">Data</th>
-          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="schedule">Schedule</th>
-          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="tags">Tags</th>
-          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="chunk">Chunk</th>
-          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="valLoss">Pos Loss</th>
-          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="rotLoss">Rot Loss</th>
-          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="score">Score</th>
-          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="ckpts">Ckpts</th>
-          <th class="px-4 py-3 font-semibold text-gray-600 cursor-pointer select-none" data-sort="status">Status</th>
-        </tr>
-      </thead>
+    <table class="w-full text-xs" id="modelTable">
+      <thead><tr id="headerRow" class="border-b border-slate-800 text-slate-500 text-[10px] uppercase tracking-wider"></tr></thead>
+      <tbody id="summaryRow" class="border-b border-slate-800"></tbody>
       <tbody id="tableBody"></tbody>
     </table>
   </div>
-  <div id="noResults" class="hidden text-center py-12 text-gray-400 text-sm">No models match your filters.</div>
+  <div id="noResults" class="hidden text-center py-12 text-slate-500 text-sm">No models match your filters. <button class="text-emerald-400 hover:underline" onclick="resetFilters()">Clear filters</button></div>
 </section>
 
-<!-- Charts -->
-<section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <div class="card"><h3 class="text-sm font-semibold text-gray-700 mb-4">Val Loss by Model</h3><div style="height:240px"><canvas id="barChart"></canvas></div></div>
-  <div class="card"><h3 class="text-sm font-semibold text-gray-700 mb-4">Training Steps vs Val Loss</h3><div style="height:240px"><canvas id="scatterChart"></canvas></div></div>
-</section>
-<section class="card">
-  <h3 class="text-sm font-semibold text-gray-700 mb-4">Hyperparameter Comparison</h3>
-  <div style="height:220px"><canvas id="hparamChart"></canvas></div>
+<!-- DETAIL PANELS -->
+<section id="detailPanels" class="space-y-1"></section>
+
+<!-- ANALYSIS CHARTS 2x2 -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-4 anim-in anim-in-d5">
+  <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4"><h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Encoding Impact</h3><div style="height:200px"><canvas id="chartEncoding"></canvas></div></div>
+  <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4"><h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Method Impact</h3><div style="height:200px"><canvas id="chartMethod"></canvas></div></div>
+  <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4"><h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Data Impact</h3><div style="height:200px"><canvas id="chartData"></canvas></div></div>
+  <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4"><h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Training Dynamics</h3><div style="height:200px"><canvas id="chartDynamics"></canvas></div></div>
 </section>
 
-<!-- Detail Cards -->
-<section class="space-y-4" id="detailCards">
-  <h2 class="text-lg font-semibold text-gray-800">Model Details</h2>
-  <div id="detailContainer" class="space-y-3"></div>
+<!-- EVAL CURVES -->
+<section class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4 anim-in anim-in-d5">
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Eval Loss Curves</h3>
+    <div class="flex items-center gap-3 text-[10px]">
+      <label class="flex items-center gap-1.5 text-slate-500 cursor-pointer"><input type="checkbox" id="logScale" checked class="accent-emerald-500" onchange="renderEvalCurves()"><span>Log scale</span></label>
+      <label class="flex items-center gap-1.5 text-slate-500 cursor-pointer"><input type="checkbox" id="showBestOnly" class="accent-emerald-500" onchange="renderEvalCurves()"><span>Best only</span></label>
+    </div>
+  </div>
+  <div style="height:280px"><canvas id="chartEvalCurves"></canvas></div>
 </section>
 
 </main>
 
-<footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-gray-400">
-  X-VLA Model Dashboard &middot; auto-generated from training checkpoints
+<footer class="max-w-7xl mx-auto px-4 py-6 text-center text-[10px] text-slate-700 font-mono">
+  X-VLA Model Lab &middot; built from training checkpoints &middot; <span id="footerGen"></span>
 </footer>
 
+</div>
+
 <script>
-// ── Embedded data ──
+// ═══ DATA ═══
 const MODELS_DATA = {"models": [{"id": "v7-lora-full-delta-short8", "action_encoding": "delta", "mode": "peft", "num_actions": 8, "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 12000, "path": "ckpt-12000", "is_lora": true, "merged": false}, {"step": 14000, "path": "ckpt-14000", "is_lora": true, "merged": false}, {"step": 16000, "path": "ckpt-16000", "is_lora": true, "merged": false}, {"step": 18000, "path": "ckpt-18000", "is_lora": true, "merged": false}, {"step": 2000, "path": "ckpt-2000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 22000, "path": "ckpt-22000", "is_lora": true, "merged": false}, {"step": 24000, "path": "ckpt-24000", "is_lora": true, "merged": false}, {"step": 26000, "path": "ckpt-26000", "is_lora": true, "merged": false}, {"step": 28000, "path": "ckpt-28000", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}, {"step": 32000, "path": "ckpt-32000", "is_lora": true, "merged": false}, {"step": 34000, "path": "ckpt-34000", "is_lora": true, "merged": false}, {"step": 36000, "path": "ckpt-36000", "is_lora": true, "merged": false}, {"step": 38000, "path": "ckpt-38000", "is_lora": true, "merged": false}, {"step": 4000, "path": "ckpt-4000", "is_lora": true, "merged": false}, {"step": 40000, "path": "ckpt-40000", "is_lora": true, "merged": false}, {"step": 6000, "path": "ckpt-6000", "is_lora": true, "merged": false}, {"step": 8000, "path": "ckpt-8000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/v7-lora-full-delta-short8", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 2, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 40000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 2000, "log_interval": 20, "seed": 0, "freeze_vlm": false, "num_actions": 8}, "best_eval": {"step": 27000, "pos": 0.0006, "rot": 0.0004}, "all_eval_results": [{"step": 1000, "pos": 0.0221, "rot": 0.0161}, {"step": 2000, "pos": 0.0234, "rot": 0.0054}, {"step": 3000, "pos": 0.0147, "rot": 0.0029}, {"step": 4000, "pos": 0.0077, "rot": 0.0037}, {"step": 5000, "pos": 0.0021, "rot": 0.0071}, {"step": 6000, "pos": 0.0029, "rot": 0.0035}, {"step": 7000, "pos": 0.0123, "rot": 0.0057}, {"step": 8000, "pos": 0.0051, "rot": 0.0025}, {"step": 9000, "pos": 0.0124, "rot": 0.0044}, {"step": 10000, "pos": 0.0048, "rot": 0.0043}, {"step": 11000, "pos": 0.0015, "rot": 0.0058}, {"step": 12000, "pos": 0.0059, "rot": 0.0053}, {"step": 13000, "pos": 0.0033, "rot": 0.0026}, {"step": 14000, "pos": 0.0085, "rot": 0.0039}, {"step": 15000, "pos": 0.0062, "rot": 0.0057}, {"step": 16000, "pos": 0.0024, "rot": 0.0022}, {"step": 17000, "pos": 0.0083, "rot": 0.0023}, {"step": 18000, "pos": 0.0032, "rot": 0.0008}, {"step": 19000, "pos": 0.0055, "rot": 0.0005}, {"step": 20000, "pos": 0.0117, "rot": 0.0015}, {"step": 21000, "pos": 0.0048, "rot": 0.0018}, {"step": 22000, "pos": 0.0037, "rot": 0.0016}, {"step": 23000, "pos": 0.003, "rot": 0.0005}, {"step": 24000, "pos": 0.0021, "rot": 0.0004}, {"step": 25000, "pos": 0.0015, "rot": 0.0005}, {"step": 26000, "pos": 0.0017, "rot": 0.0008}, {"step": 27000, "pos": 0.0006, "rot": 0.0004}, {"step": 28000, "pos": 0.0036, "rot": 0.0001}, {"step": 29000, "pos": 0.0015, "rot": 0.0004}, {"step": 30000, "pos": 0.0014, "rot": 0.0003}, {"step": 31000, "pos": 0.001, "rot": 0.0007}, {"step": 32000, "pos": 0.0014, "rot": 0.0006}, {"step": 33000, "pos": 0.0015, "rot": 0.0004}, {"step": 34000, "pos": 0.0013, "rot": 0.0001}, {"step": 35000, "pos": 0.0017, "rot": 0.0004}, {"step": 36000, "pos": 0.0019, "rot": 0.0002}, {"step": 37000, "pos": 0.0009, "rot": 0.0001}, {"step": 38000, "pos": 0.0008, "rot": 0.0002}, {"step": 39000, "pos": 0.0013, "rot": 0.0001}], "training_complete": true, "registry_status": "trained", "registry_method": "LoRA r=8, num_actions=8", "registry_data": "full", "registry_score": "-1.6", "registry_notes": "Reaches 9cm but collides with task board.", "registry_version": "v7", "superseded_by": null, "supersedes": null}, {"id": "v10-lora-full-abs-continued", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 5000, "path": "ckpt-5000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "/home/yifeng/aic_xvla_data/xvla_absolute/ckpt-20000_merged", "output_dir": "/home/yifeng/aic_xvla_data/xvla_absolute_continued", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 2, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 20000, "freeze_steps": 200, "warmup_steps": 50, "use_cosine_decay": false, "min_lr_ratio": 0.1, "save_interval": 5000, "log_interval": 20, "seed": 0}, "best_eval": {"step": 6000, "pos": 0.0041, "rot": 0.0003}, "all_eval_results": [{"step": 1000, "pos": 0.0222, "rot": 0.0017}, {"step": 2000, "pos": 0.0089, "rot": 0.0004}, {"step": 3000, "pos": 0.0251, "rot": 0.0016}, {"step": 4000, "pos": 0.0305, "rot": 0.002}, {"step": 5000, "pos": 0.0593, "rot": 0.001}, {"step": 6000, "pos": 0.0041, "rot": 0.0003}, {"step": 7000, "pos": 0.0163, "rot": 0.0012}, {"step": 8000, "pos": 0.0266, "rot": 0.0009}, {"step": 9000, "pos": 0.0199, "rot": 0.0005}, {"step": 10000, "pos": 0.1576, "rot": 0.0023}, {"step": 11000, "pos": 0.18, "rot": 0.0009}, {"step": 12000, "pos": 0.0522, "rot": 0.0005}, {"step": 13000, "pos": 0.0725, "rot": 0.0011}, {"step": 14000, "pos": 0.0175, "rot": 0.0013}, {"step": 15000, "pos": 0.0064, "rot": 0.001}, {"step": 16000, "pos": 0.0187, "rot": 0.0027}, {"step": 17000, "pos": 0.0085, "rot": 0.0013}, {"step": 18000, "pos": 0.0269, "rot": 0.0004}, {"step": 19000, "pos": 0.007, "rot": 0.0008}], "training_complete": true, "registry_status": "trained", "registry_method": "LoRA r=8, continued from v2", "registry_data": "full", "registry_score": null, "registry_notes": "Continued from v2 merged weights.", "registry_version": "v10", "superseded_by": null, "supersedes": null}, {"id": "v8-lora-r32-full-abs-velmode", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [{"step": 10500, "path": "ckpt-10500", "is_lora": true, "merged": false}, {"step": 12000, "path": "ckpt-12000", "is_lora": true, "merged": false}, {"step": 13500, "path": "ckpt-13500", "is_lora": true, "merged": false}, {"step": 1500, "path": "ckpt-1500", "is_lora": true, "merged": false}, {"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 16500, "path": "ckpt-16500", "is_lora": true, "merged": false}, {"step": 18000, "path": "ckpt-18000", "is_lora": true, "merged": false}, {"step": 19500, "path": "ckpt-19500", "is_lora": true, "merged": false}, {"step": 21000, "path": "ckpt-21000", "is_lora": true, "merged": false}, {"step": 22500, "path": "ckpt-22500", "is_lora": true, "merged": false}, {"step": 24000, "path": "ckpt-24000", "is_lora": true, "merged": false}, {"step": 25500, "path": "ckpt-25500", "is_lora": true, "merged": false}, {"step": 27000, "path": "ckpt-27000", "is_lora": true, "merged": false}, {"step": 28500, "path": "ckpt-28500", "is_lora": true, "merged": false}, {"step": 3000, "path": "ckpt-3000", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}, {"step": 4500, "path": "ckpt-4500", "is_lora": true, "merged": false}, {"step": 6000, "path": "ckpt-6000", "is_lora": true, "merged": false}, {"step": 7500, "path": "ckpt-7500", "is_lora": true, "merged": false}, {"step": 9000, "path": "ckpt-9000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/v8-lora-r32-full-abs-velmode", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 1, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 30000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 1500, "log_interval": 20, "seed": 0, "freeze_vlm": false, "lora_r": 32, "lora_alpha": 64}, "best_eval": {"step": 21000, "pos": 0.0052, "rot": 0.0005}, "all_eval_results": [{"step": 1000, "pos": 0.5118, "rot": 0.0057}, {"step": 2000, "pos": 0.4405, "rot": 0.0229}, {"step": 3000, "pos": 0.0713, "rot": 0.033}, {"step": 4000, "pos": 1.1026, "rot": 0.0054}, {"step": 5000, "pos": 1.4872, "rot": 0.0029}, {"step": 6000, "pos": 0.2191, "rot": 0.0062}, {"step": 7000, "pos": 0.478, "rot": 0.0174}, {"step": 8000, "pos": 1.431, "rot": 0.0064}, {"step": 9000, "pos": 0.2977, "rot": 0.0055}, {"step": 10000, "pos": 0.0603, "rot": 0.0018}, {"step": 11000, "pos": 0.2271, "rot": 0.0086}, {"step": 12000, "pos": 0.5853, "rot": 0.0055}, {"step": 13000, "pos": 0.1429, "rot": 0.003}, {"step": 14000, "pos": 0.3994, "rot": 0.0016}, {"step": 15000, "pos": 0.0242, "rot": 0.0023}, {"step": 16000, "pos": 0.0321, "rot": 0.0012}, {"step": 17000, "pos": 0.0591, "rot": 0.0013}, {"step": 18000, "pos": 0.0092, "rot": 0.0008}, {"step": 19000, "pos": 0.0093, "rot": 0.0002}, {"step": 20000, "pos": 0.0894, "rot": 0.0005}, {"step": 21000, "pos": 0.0052, "rot": 0.0005}, {"step": 22000, "pos": 0.0084, "rot": 0.0006}, {"step": 23000, "pos": 0.0144, "rot": 0.0005}, {"step": 24000, "pos": 0.0136, "rot": 0.0003}, {"step": 25000, "pos": 0.0091, "rot": 0.0008}, {"step": 26000, "pos": 0.0206, "rot": 0.0002}, {"step": 27000, "pos": 0.0153, "rot": 0.0002}, {"step": 28000, "pos": 0.0181, "rot": 0.0003}, {"step": 29000, "pos": 0.0297, "rot": 0.0009}], "training_complete": true, "registry_status": "trained", "registry_method": "LoRA r=32, vel mode", "registry_data": "full", "registry_score": null, "registry_notes": "", "registry_version": "v8", "superseded_by": null, "supersedes": null}, {"id": "v3-lora-sub-abs", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}, {"step": 40000, "path": "ckpt-40000", "is_lora": true, "merged": false}, {"step": 50000, "path": "ckpt-50000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/xvla_lora_sub", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta_sub2.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta_sub2.json", "eval_interval": 1000, "batch_size": 2, "learning_rate": 0.0005, "learning_coef": 0.1, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 50000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 10000, "log_interval": 20, "seed": 0, "freeze_vlm": false}, "best_eval": {"step": 32000, "pos": 0.0055, "rot": 0.0026}, "all_eval_results": [{"step": 1000, "pos": 0.206, "rot": 0.0066}, {"step": 2000, "pos": 0.3079, "rot": 0.0094}, {"step": 3000, "pos": 0.0252, "rot": 0.002}, {"step": 4000, "pos": 0.1129, "rot": 0.0048}, {"step": 5000, "pos": 0.1807, "rot": 0.0015}, {"step": 6000, "pos": 0.0616, "rot": 0.002}, {"step": 7000, "pos": 0.1053, "rot": 0.0028}, {"step": 8000, "pos": 0.2072, "rot": 0.0018}, {"step": 9000, "pos": 0.0348, "rot": 0.0019}, {"step": 10000, "pos": 0.0559, "rot": 0.0005}, {"step": 11000, "pos": 0.0311, "rot": 0.0024}, {"step": 12000, "pos": 0.2723, "rot": 0.0027}, {"step": 13000, "pos": 0.0723, "rot": 0.0007}, {"step": 14000, "pos": 0.2426, "rot": 0.0015}, {"step": 15000, "pos": 0.1088, "rot": 0.0012}, {"step": 16000, "pos": 0.0402, "rot": 0.0009}, {"step": 17000, "pos": 0.2817, "rot": 0.0034}, {"step": 18000, "pos": 0.0395, "rot": 0.0015}, {"step": 19000, "pos": 0.1126, "rot": 0.0011}, {"step": 20000, "pos": 0.0354, "rot": 0.0019}, {"step": 21000, "pos": 0.0641, "rot": 0.0016}, {"step": 22000, "pos": 0.0549, "rot": 0.0014}, {"step": 23000, "pos": 0.0558, "rot": 0.0004}, {"step": 24000, "pos": 0.0975, "rot": 0.0037}, {"step": 25000, "pos": 0.1057, "rot": 0.0006}, {"step": 26000, "pos": 0.0611, "rot": 0.0029}, {"step": 27000, "pos": 0.0402, "rot": 0.0024}, {"step": 28000, "pos": 0.0466, "rot": 0.0006}, {"step": 29000, "pos": 0.0347, "rot": 0.0035}, {"step": 30000, "pos": 0.0349, "rot": 0.001}, {"step": 31000, "pos": 0.0528, "rot": 0.0008}, {"step": 32000, "pos": 0.0055, "rot": 0.0026}, {"step": 33000, "pos": 0.0077, "rot": 0.0009}, {"step": 34000, "pos": 0.0281, "rot": 0.0025}, {"step": 35000, "pos": 0.0209, "rot": 0.0021}, {"step": 36000, "pos": 0.033, "rot": 0.0011}, {"step": 37000, "pos": 0.0379, "rot": 0.0017}, {"step": 38000, "pos": 0.0348, "rot": 0.0019}, {"step": 39000, "pos": 0.0526, "rot": 0.0011}, {"step": 40000, "pos": 0.0392, "rot": 0.0013}, {"step": 41000, "pos": 0.029, "rot": 0.0008}, {"step": 42000, "pos": 0.046, "rot": 0.0004}, {"step": 43000, "pos": 0.0129, "rot": 0.0008}, {"step": 44000, "pos": 0.0117, "rot": 0.0007}, {"step": 45000, "pos": 0.0299, "rot": 0.0007}, {"step": 46000, "pos": 0.0254, "rot": 0.0004}, {"step": 47000, "pos": 0.0174, "rot": 0.0009}, {"step": 48000, "pos": 0.0112, "rot": 0.0008}, {"step": 49000, "pos": 0.0164, "rot": 0.0005}], "training_complete": true, "registry_status": "trained", "registry_method": "LoRA r=8, coef=0.1", "registry_data": "sub", "registry_score": null, "registry_notes": "Robot stuck.", "registry_version": "v3", "superseded_by": null, "supersedes": null}, {"id": "v2-lora-full-abs", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [{"step": 1000, "path": "ckpt-1000", "is_lora": true, "merged": false}, {"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 2000, "path": "ckpt-2000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000_merged", "is_lora": false, "merged": true}, {"step": 3000, "path": "ckpt-3000", "is_lora": true, "merged": false}, {"step": 5000, "path": "ckpt-5000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/xvla_absolute", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 1, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 3000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": false, "min_lr_ratio": 0.1, "save_interval": 1000, "log_interval": 20, "seed": 0}, "best_eval": {"step": 16000, "pos": 0.0089, "rot": 0.0008}, "all_eval_results": [{"step": 1000, "pos": 0.0765, "rot": 0.0341}, {"step": 2000, "pos": 0.0868, "rot": 0.0196}, {"step": 1000, "pos": 0.1616, "rot": 0.0409}, {"step": 2000, "pos": 0.0301, "rot": 0.0023}, {"step": 3000, "pos": 0.0222, "rot": 0.0007}, {"step": 4000, "pos": 0.1444, "rot": 0.0032}, {"step": 5000, "pos": 0.0352, "rot": 0.0092}, {"step": 6000, "pos": 0.0138, "rot": 0.0036}, {"step": 7000, "pos": 0.0123, "rot": 0.0003}, {"step": 8000, "pos": 0.0486, "rot": 0.0028}, {"step": 9000, "pos": 0.1041, "rot": 0.0006}, {"step": 10000, "pos": 0.2063, "rot": 0.0059}, {"step": 11000, "pos": 0.2742, "rot": 0.0009}, {"step": 12000, "pos": 0.1172, "rot": 0.0011}, {"step": 13000, "pos": 0.128, "rot": 0.0008}, {"step": 14000, "pos": 0.0122, "rot": 0.0006}, {"step": 15000, "pos": 0.2038, "rot": 0.0039}, {"step": 16000, "pos": 0.0089, "rot": 0.0008}, {"step": 17000, "pos": 0.0153, "rot": 0.0006}, {"step": 18000, "pos": 0.0384, "rot": 0.0045}, {"step": 19000, "pos": 0.0203, "rot": 0.0014}], "training_complete": true, "registry_status": "trained", "registry_method": "LoRA r=8, lr=5e-4", "registry_data": "full", "registry_score": "63/300", "registry_notes": "", "registry_version": "v2", "superseded_by": null, "supersedes": null}, {"id": "v4-fullft-full-abs", "action_encoding": "absolute", "mode": "full", "num_actions": null, "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": false, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": false, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/xvla_full_ft", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "batch_size": 2, "learning_rate": 0.0001, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 100000, "freeze_steps": 1000, "warmup_steps": 2000, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 10000, "log_interval": 20, "seed": 0, "freeze_vlm": true}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "trained", "registry_method": "Full FT, frozen VLM", "registry_data": "full", "registry_score": null, "registry_notes": "", "registry_version": "v4", "superseded_by": null, "supersedes": null}, {"id": "v6-fullft-full-abs-jointlr", "action_encoding": "absolute", "mode": "full", "num_actions": null, "checkpoints": [], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/v6-fullft-full-abs-jointlr", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "batch_size": 1, "learning_rate": 0.0001, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 20000, "freeze_steps": 0, "warmup_steps": 500, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 1000, "log_interval": 20, "seed": 0, "freeze_vlm": false, "vlm_lr": 1e-05, "head_lr": 0.0001}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "trained", "registry_method": "Full FT, head=1e-4/vlm=1e-5", "registry_data": "full", "registry_score": null, "registry_notes": "", "registry_version": "v6", "superseded_by": null, "supersedes": null}, {"id": "v11-lora-r32-sub-delta", "action_encoding": "delta", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "training", "registry_method": "LoRA r=32, pose mode", "registry_data": "sub", "registry_score": null, "registry_notes": "Delta re-run of v5. Fix for v5 hover bug.", "registry_version": "v11", "superseded_by": null, "supersedes": "v5-lora-r32-sub-abs-velmode"}, {"id": "v1-lora-full-delta", "action_encoding": "delta", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "trained", "registry_method": "LoRA r=8, lr=5e-4", "registry_data": "full", "registry_score": "63/300", "registry_notes": "Moves but doesn't insert.", "registry_version": "v1", "superseded_by": null, "supersedes": null}, {"id": "v5-lora-r32-sub-abs-velmode", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "failed", "registry_method": "LoRA r=32, vel mode", "registry_data": "sub", "registry_score": null, "registry_notes": "Hover bug \u2014 absolute/proprio mismatch.", "registry_version": "v5", "superseded_by": "v11-lora-r32-sub-delta", "supersedes": null}, {"id": "v9-lora-r32-sub-abs-velmode-2stage", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "planned", "registry_method": "LoRA r=32, 2-stage", "registry_data": "sub", "registry_score": null, "registry_notes": "2-stage freeze\u2192full recipe.", "registry_version": "v9", "superseded_by": null, "supersedes": null}]};
+const GENERATED_AT = "2026-05-02T04:28:49.402838+00:00";
 
-const GENERATED_AT = "2026-05-02T04:19:16.383867+00:00";
+// ═══ CONSTANTS ═══
+const ENC_COLORS = { absolute: { bg:'rgba(56,189,248,0.85)', border:'#38bdf8', light:'rgba(56,189,248,0.08)' }, delta: { bg:'rgba(52,211,153,0.85)', border:'#34d399', light:'rgba(52,211,153,0.08)' } };
+const ARCH_COLORS = ['#38bdf8','#34d399','#fbbf24','#a78bfa','#f472b6','#fb923c','#2dd4bf','#a3e635','#c084fc','#f43f5e','#eab308'];
+const STATUS_BADGE = { trained:'<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-900/40 text-emerald-400 border border-emerald-800/40">trained</span>', training:'<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-900/40 text-amber-400 border border-amber-800/40">training</span>', planned:'<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-700 text-slate-400 border border-slate-600">planned</span>', failed:'<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-rose-900/40 text-rose-400 border border-rose-800/40">failed</span>' };
 
-// ── Derived fields ──
-function getArch(model) {
-  if (model.registry_method && !model.hyperparams.lora_r && !model.hyperparams.learning_rate) {
-    return model.registry_method;
-  }
-  if (model.mode === 'full') {
-    const parts = [];
-    if (model.hyperparams.freeze_vlm) parts.push('VLM frozen');
-    if (model.hyperparams.vlm_lr != null && model.hyperparams.head_lr != null) parts.push('joint LR');
-    return 'Full FT' + (parts.length ? ' (' + parts.join(', ') + ')' : '');
-  }
-  const r = model.hyperparams.lora_r || 8;
-  const cont = model.id.includes('continued') ? ' (cont.)' : '';
-  return 'LoRA r=' + r + cont;
+// ═══ STATE ═══
+let state = { filters: { encoding:'all', arch:'all', data:'all', status:'all', search:'' }, sort: { key:'valLoss', asc:true }, expanded: null };
+let charts = {};
+
+// ═══ HELPERS ═══
+function getArch(m) {
+  if (m.mode==='full') { const p=[]; if(m.hyperparams.freeze_vlm) p.push('VLM frozen'); if(m.hyperparams.vlm_lr!=null) p.push('joint LR'); return 'Full FT'+(p.length?' ('+p.join(', ')+')':''); }
+  return 'LoRA r'+(m.hyperparams.lora_r||8)+(m.id.includes('continued')?' cont.':'');
+}
+function getDataTag(m) { return (m.registry_data||(m.hyperparams.train_metas_path?.includes('sub')?'sub':'full')); }
+function getChunk(m) { return m.hyperparams.num_actions||m.num_actions||null; }
+function fmtNum(n,d) { if(d===undefined)d=4; return n==null?'--':Number(n).toFixed(d); }
+function getStatus(m) { return m.registry_status||(m.training_complete?'trained':m.checkpoints.length?'training':'planned'); }
+function getEpoch(m) { const p=m.id.match(/v(\d+)/); return p?parseInt(p[1]):0; }
+function getSchedule(m) {
+  const hp=m.hyperparams; const p=[];
+  if(hp.iters) p.push((hp.iters/1000|0)+'K');
+  if(hp.learning_rate) p.push(Number(hp.learning_rate).toExponential(1).replace('e-0','e-'));
+  if(hp.warmup_steps||hp.freeze_steps) p.push('w'+(hp.warmup_steps||0)+' f'+(hp.freeze_steps||0));
+  return p.join(' | ')||'--';
+}
+function getTags(m) {
+  const t=[],id=m.id;
+  if(id.includes('r32')) t.push('r32'); if(id.includes('velmode')) t.push('vel'); if(id.includes('jointlr')) t.push('jointlr');
+  if(id.includes('short8')) t.push('chunk=8'); if(id.includes('continued')) t.push('cont.'); if(id.includes('2stage')) t.push('2-stage');
+  if(m.hyperparams.learning_coef&&m.hyperparams.learning_coef!==1.0) t.push('coef='+m.hyperparams.learning_coef);
+  if(m.hyperparams.num_actions&&m.hyperparams.num_actions!==30) t.push('chunk='+m.hyperparams.num_actions);
+  return t;
 }
 
-function getSchedule(model) {
-  const hp = model.hyperparams;
-  const parts = [];
-  const iters = hp.iters || model.train_params?.iters;
-  if (iters) parts.push((iters/1000|0) + 'K');
-  const lr = hp.learning_rate;
-  const coef = hp.learning_coef;
-  if (lr) {
-    const lrStr = Number(lr).toExponential(1).replace('e-0', 'e-');
-    parts.push(coef != null && coef !== 1.0 ? lrStr + '/' + coef : lrStr);
-  }
-  const w = hp.warmup_steps;
-  const f = hp.freeze_steps;
-  if (w || f) parts.push('w' + (w||0) + ' f' + (f||0));
-  if (hp.use_cosine_decay) parts.push('cos');
-  return parts.join(' | ') || '--';
-}
-
-function getTags(model) {
-  const tags = [];
-  const id = model.id;
-  if (id.includes('r32')) tags.push('r32');
-  if (id.includes('velmode')) tags.push('vel');
-  if (id.includes('jointlr')) tags.push('jointlr');
-  if (id.includes('short8')) tags.push('chunk=8');
-  if (id.includes('continued')) tags.push('continued');
-  if (id.includes('2stage')) tags.push('2-stage');
-  if (model.hyperparams.learning_coef && model.hyperparams.learning_coef !== 1.0) tags.push('coef=' + model.hyperparams.learning_coef);
-  if (model.hyperparams.num_actions && model.hyperparams.num_actions !== 30) tags.push('chunk=' + model.hyperparams.num_actions);
-  return tags;
-}
-
-function getStatusBadge(model) {
-  const s = model.registry_status;
-  if (!s) return '';
-  const map = {
-    trained: '<span class="badge badge-green">trained</span>',
-    training: '<span class="badge badge-yellow">training</span>',
-    planned: '<span class="badge badge-gray">planned</span>',
-    failed: '<span class="badge" style="background:#fee2e2;color:#991b1b">failed</span>',
-  };
-  return map[s] || '';
-}
-
-function getDataTag(model) {
-  if (model.registry_data && !model.hyperparams.train_metas_path) return model.registry_data;
-  if (model.hyperparams.train_metas_path && model.hyperparams.train_metas_path.includes('sub')) return 'sub';
-  return 'full';
-}
-
-function getChunk(model) {
-  return model.hyperparams.num_actions || model.num_actions || null;
-}
-
-function fmtNum(n, decimals) {
-  if (decimals === undefined) decimals = 4;
-  if (n == null) return '--';
-  return Number(n).toFixed(decimals);
-}
-
-// ── State ──
-let sortKey = 'valLoss';
-let sortAsc = true;
-let expandedModels = {};
-
-// ── Summary cards ──
-function renderSummary() {
-  const models = MODELS_DATA.models;
-  const withEval = models.filter(m => m.best_eval);
-  let bestPos = null, bestPosModel = null;
-  let bestRot = null, bestRotModel = null;
-  withEval.forEach(m => {
-    if (bestPos === null || m.best_eval.pos < bestPos) { bestPos = m.best_eval.pos; bestPosModel = m.id; }
-    if (bestRot === null || m.best_eval.rot < bestRot) { bestRot = m.best_eval.rot; bestRotModel = m.id; }
-  });
-  const latestCkpt = Math.max(...models.flatMap(m => m.checkpoints.map(c => c.step)), 0);
-
-  const cards = [
-    { label: 'Models', value: models.length, sub: (models.filter(m => m.training_complete).length) + ' complete' },
-    { label: 'Best Pos Loss', value: bestPos != null ? fmtNum(bestPos) : '--', sub: bestPosModel || '' },
-    { label: 'Best Rot Loss', value: bestRot != null ? fmtNum(bestRot) : '--', sub: bestRotModel || '' },
-    { label: 'Latest Ckpt', value: latestCkpt.toLocaleString() + ' steps', sub: new Date(GENERATED_AT).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) },
-  ];
-
-  document.getElementById('summaryCards').innerHTML = cards.map(c =>
-    `<div class="card flex flex-col gap-1">
-      <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">${c.label}</span>
-      <span class="text-2xl font-bold text-gray-900">${c.value}</span>
-      <span class="text-xs text-gray-400 truncate" title="${c.sub}">${c.sub}</span>
-    </div>`
-  ).join('');
-
-  document.getElementById('genTime').textContent = 'Generated ' + new Date(GENERATED_AT).toLocaleString();
-}
-
-// ── Table ──
-function getFilteredModels() {
-  const encFilter = document.getElementById('encodingFilter').value;
-  const modeFilter = document.getElementById('modeFilter').value;
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  let models = [...MODELS_DATA.models];
-
-  if (encFilter !== 'all') models = models.filter(m => m.action_encoding === encFilter);
-  if (modeFilter !== 'all') models = models.filter(m => m.mode === modeFilter);
-  if (search) models = models.filter(m => m.id.toLowerCase().includes(search));
-
-  // Sort
-  models.sort((a, b) => {
-    let va, vb;
-    switch (sortKey) {
-      case 'id': va = parseInt(a.id.match(/v(\d+)/)?.[1] || 0); vb = parseInt(b.id.match(/v(\d+)/)?.[1] || 0); break;
-      case 'arch': va = getArch(a); vb = getArch(b); break;
-      case 'encoding': va = a.action_encoding; vb = b.action_encoding; break;
-      case 'data': va = getDataTag(a); vb = getDataTag(b); break;
-      case 'schedule': va = getSchedule(a); vb = getSchedule(b); break;
-      case 'tags': va = getTags(a).length; vb = getTags(b).length; break;
-      case 'chunk': va = getChunk(a) || 999; vb = getChunk(b) || 999; break;
-      case 'valLoss': va = a.best_eval ? a.best_eval.pos : 999; vb = b.best_eval ? b.best_eval.pos : 999; break;
-      case 'rotLoss': va = a.best_eval ? a.best_eval.rot : 999; vb = b.best_eval ? b.best_eval.rot : 999; break;
-      case 'score': va = '--'; vb = '--'; break;
-      case 'ckpts': va = a.checkpoints.length; vb = b.checkpoints.length; break;
-      case 'status': va = a.training_complete ? 1 : 0; vb = b.training_complete ? 1 : 0; break;
-      default: va = a.id; vb = b.id;
+// ═══ FILTER + SORT ═══
+function getFiltered() {
+  const f=state.filters; const s=state.sort;
+  let models=[...MODELS_DATA.models];
+  if(f.encoding!=='all') models=models.filter(m=>m.action_encoding===f.encoding);
+  if(f.arch!=='all') models=models.filter(m=>m.mode===f.arch);
+  if(f.data!=='all') models=models.filter(m=>getDataTag(m)===f.data);
+  if(f.status!=='all') models=models.filter(m=>getStatus(m)===f.status);
+  if(f.search) models=models.filter(m=>m.id.toLowerCase().includes(f.search));
+  models.sort((a,b)=>{ let va,vb;
+    switch(s.key) {
+      case'id': va=getEpoch(a); vb=getEpoch(b); break;
+      case'arch': va=getArch(a); vb=getArch(b); break;
+      case'encoding': va=a.action_encoding; vb=b.action_encoding; break;
+      case'data': va=getDataTag(a); vb=getDataTag(b); break;
+      case'loss': va=a.best_eval?a.best_eval.pos:999; vb=b.best_eval?b.best_eval.pos:999; break;
+      case'rot': va=a.best_eval?a.best_eval.rot:999; vb=b.best_eval?b.best_eval.rot:999; break;
+      case'score': va=a.registry_score||'~'; vb=b.registry_score||'~'; break;
+      case'ckpts': va=a.checkpoints.length; vb=b.checkpoints.length; break;
+      case'status': va=['planned','training','trained','failed'].indexOf(getStatus(a)); vb=['planned','training','trained','failed'].indexOf(getStatus(b)); break;
+      default: va=getEpoch(a); vb=getEpoch(b);
     }
-    if (typeof va === 'string') return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
-    return sortAsc ? va - vb : vb - va;
+    if(typeof va==='string') return s.asc?va.localeCompare(vb):vb.localeCompare(va);
+    return s.asc?va-vb:vb-va;
   });
-
   return models;
 }
 
-function renderTable() {
-  const models = getFilteredModels();
-  const bestPos = Math.min(...models.filter(m => m.best_eval).map(m => m.best_eval.pos), Infinity);
+function resetFilters() {
+  state.filters={encoding:'all',arch:'all',data:'all',status:'all',search:''};
+  document.getElementById('encFilter').value='all'; document.getElementById('archFilter').value='all';
+  document.getElementById('dataFilter').value='all'; document.getElementById('statusFilter').value='all';
+  document.getElementById('searchInput').value='';
+  rerender();
+}
 
-  document.getElementById('noResults').classList.toggle('hidden', models.length > 0);
+function rerender() {
+  const models=getFiltered();
+  renderHero(models); renderTimeline(models); renderTable(models); renderDetails(models);
+  renderCharts(models); renderEvalCurves(models);
+  document.getElementById('resultCount').textContent=models.length+' / '+MODELS_DATA.models.length;
+}
 
-  document.getElementById('tableBody').innerHTML = models.map(m => {
-    const isBest = m.best_eval && m.best_eval.pos === bestPos;
-    const rowClass = isBest ? 'best-row' : 'hover-row';
-    const chunk = getChunk(m);
-    const hasData = m.checkpoints.length > 0 || m.best_eval;
-    const statusHtml = getStatusBadge(m);
-    const statusCol = statusHtml || (hasData
-      ? `<span class="badge ${m.training_complete ? 'badge-green' : 'badge-yellow'}">${m.training_complete ? 'done' : 'running'}</span>`
-      : '<span class="badge badge-gray">no data</span>');
-    let notes = '';
-    if (m.superseded_by) notes += `<span class="text-xs text-orange-500 ml-1" title="Superseded by ${m.superseded_by}">→ ${m.superseded_by}</span>`;
-    if (m.supersedes) notes += `<span class="text-xs text-blue-500 ml-1" title="Supersedes ${m.supersedes}">← fixes ${m.supersedes}</span>`;
+// ═══ HERO ═══
+function renderHero(models) {
+  const all=MODELS_DATA.models;
+  const complete=all.filter(m=>m.training_complete).length;
+  const best=all.reduce((b,m)=>m.best_eval&&(!b||m.best_eval.pos<b.best_eval.pos)?m:b,null);
+  document.getElementById('heroStats').innerHTML=
+    `<span class="font-semibold text-white">${all.length}</span> models <span class="text-slate-600">|</span> ${complete} complete`+
+    (best?` <span class="text-slate-600">|</span> <span class="text-emerald-400 font-medium">best</span> ${best.id} <span class="text-slate-500 font-mono">pos=${fmtNum(best.best_eval.pos)}</span>`:'');
+  document.getElementById('genTime').textContent=GENERATED_AT.slice(0,10);
+  document.getElementById('footerGen').textContent=GENERATED_AT;
 
-    const tags = getTags(m);
-    const tagsHtml = tags.map(t => `<span class="badge badge-gray text-xs mr-1">${t}</span>`).join('');
-    return `<tr class="${rowClass} border-b border-gray-100 cursor-pointer" onclick="toggleDetail('${m.id}')">
-      <td class="px-4 py-3 font-medium text-gray-900 text-xs">
-        <span class="text-xs text-gray-400 mr-1">${m.mode === 'full' ? '🔧' : '🎯'}</span>${m.id}${notes}
-      </td>
-      <td class="px-4 py-3 text-gray-700 text-xs whitespace-nowrap">${getArch(m)}</td>
-      <td class="px-4 py-3"><span class="badge ${m.action_encoding === 'absolute' ? 'badge-blue' : 'badge-orange'}">${m.action_encoding}</span></td>
-      <td class="px-4 py-3"><span class="badge ${getDataTag(m) === 'sub' ? 'badge-yellow' : 'badge-gray'}">${getDataTag(m)}</span></td>
-      <td class="px-4 py-3 text-gray-500 text-xs font-mono">${getSchedule(m)}</td>
-      <td class="px-4 py-3 text-xs">${tagsHtml || '<span class="text-gray-300">—</span>'}</td>
-      <td class="px-4 py-3 text-gray-600 text-xs">${chunk || '--'}</td>
-      <td class="px-4 py-3 font-mono text-sm ${isBest ? 'text-green-700 font-bold' : 'text-gray-700'}">${m.best_eval ? fmtNum(m.best_eval.pos) : '--'}</td>
-      <td class="px-4 py-3 font-mono text-sm text-gray-700">${m.best_eval ? fmtNum(m.best_eval.rot) : '--'}</td>
-      <td class="px-4 py-3 text-gray-400">${m.registry_score || '--'}</td>
-      <td class="px-4 py-3"><span class="badge badge-gray">${m.checkpoints.length}</span></td>
-      <td class="px-4 py-3">${statusCol}</td>
+  const b=best||all[0];
+  document.getElementById('bestBanner').innerHTML=b&&b.best_eval?`
+    <div class="bg-gradient-to-r from-emerald-900/20 via-slate-900/50 to-slate-900/50 border border-emerald-800/30 rounded-xl p-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-lg">★</div>
+        <div><div class="text-xs text-emerald-400 font-semibold">Best Model</div><div class="text-sm font-medium text-white">${b.id}</div></div>
+      </div>
+      <div class="flex gap-4 text-xs">
+        <div class="text-right"><div class="text-slate-500">Pos Loss</div><div class="font-mono text-emerald-400 font-medium">${fmtNum(b.best_eval.pos)}</div></div>
+        <div class="text-right"><div class="text-slate-500">Rot Loss</div><div class="font-mono text-emerald-400 font-medium">${fmtNum(b.best_eval.rot)}</div></div>
+        <div class="text-right"><div class="text-slate-500">Evals</div><div class="font-mono text-white">${b.all_eval_results.length}</div></div>
+        <div class="text-right"><div class="text-slate-500">Encoding</div><div class="font-mono text-${b.action_encoding==='delta'?'emerald':'sky'}-400">${b.action_encoding}</div></div>
+      </div>
+    </div>`:'<div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4 text-center text-slate-500 text-sm">No evaluation data yet</div>';
+}
+
+// ═══ TIMELINE ═══
+function renderTimeline(models) {
+  const all=MODELS_DATA.models;
+  if(!all.length){ document.getElementById('timelineTrack').innerHTML='<div class="text-slate-600 text-xs py-4 text-center">No models</div>'; return; }
+  const maxV=Math.max(...all.map(m=>getEpoch(m)));
+  let html='<div class="flex items-end gap-0 min-w-[500px]">';
+  // Arrows
+  html+='<svg class="absolute inset-0 w-full h-full pointer-events-none" style="height:60px">';
+  all.forEach(m=>{ if(m.supersedes){ const t=all.find(x=>x.id===m.supersedes); if(t){ const si=getEpoch(t),ei=getEpoch(m); if(si&&ei){
+    const x1=(si-1)/(maxV-1||1)*100,x2=(ei-1)/(maxV-1||1)*100;
+    html+=`<path d="M${x1}% 48 C${(x1+x2)/2}% 20,${(x1+x2)/2}% 20,${x2}% 48" fill="none" stroke="#334155" stroke-width="1.5" class="timeline-edge"/>`;
+  }}}); });
+  html+='</svg>';
+  // Nodes
+  all.sort((a,b)=>getEpoch(a)-getEpoch(b)).forEach(m=>{
+    const v=getEpoch(m); const st=getStatus(m); const enc=m.action_encoding;
+    const color=m.best_eval?'#34d399':enc==='delta'?'#34d399':'#38bdf8';
+    const isBest=m.best_eval&&m.best_eval.pos===Math.min(...all.filter(x=>x.best_eval).map(x=>x.best_eval.pos));
+    const isDead=st==='failed'; const isFuture=st==='planned';
+    html+=`<div class="flex flex-col items-center flex-1 min-w-0 timeline-node relative" style="animation-delay:${v*0.05}s">`;
+    if(m.supersedes||m.superseded_by) html+=`<div class="text-[9px] text-slate-600 mb-0.5 truncate max-w-full">${m.supersedes?'←':'→'}</div>`;
+    html+=`<div class="relative"><div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer transition-all hover:scale-125" style="background:${isFuture?'transparent':color+'30'};border:2px solid ${isDead?'#f43f5e':color};${isBest?'animation:pulse-glow 2s infinite;':''}color:${isDead?'#f43f5e':color}" title="${m.id}">${isFuture?'○':isDead?'✕':isBest?'★':v}</div></div>`;
+    html+=`<div class="text-[9px] text-slate-500 mt-1 truncate max-w-full ${isBest?'text-emerald-400 font-medium':''}">${m.id.replace('lora-','').replace('fullft-','').replace('full-','').replace('abs','').replace('delta','').replace(/-/g,' ').trim().split('-')[0]}</div>`;
+    html+=`<div class="flex gap-0.5 mt-0.5"><span class="w-2 h-0.5 rounded-full ${enc==='delta'?'bg-emerald-500/50':'bg-sky-500/50'}"></span>${m.registry_data==='sub'?'<span class="w-1.5 h-0.5 rounded-full bg-amber-500/50"></span>':''}</div>`;
+    html+=`</div>`;
+  });
+  html+='</div>';
+  document.getElementById('timelineTrack').innerHTML=html;
+}
+
+// ═══ TABLE ═══
+function renderTable(models) {
+  const best=models.reduce((b,m)=>m.best_eval&&(!b||m.best_eval.pos<b.best_eval.pos)?m:b,null);
+
+  // Header
+  const cols=[
+    {key:'id',label:'Model'},{key:'arch',label:'Arch'},{key:'encoding',label:'Enc'},{key:'data',label:'Data'},
+    {key:'loss',label:'Pos'},{key:'rot',label:'Rot'},{key:'score',label:'Score'},{key:'ckpts',label:'Ck'},{key:'status',label:'Status'}
+  ];
+  document.getElementById('headerRow').innerHTML=cols.map(c=>{
+    const active=state.sort.key===c.key;
+    return `<th class="px-3 py-2.5 font-semibold text-slate-500 cursor-pointer select-none hover:text-slate-300 transition-colors whitespace-nowrap ${active?'sort-'+(state.sort.asc?'asc':'desc'):''} text-[10px]" data-sort="${c.key}" onclick="sortBy('${c.key}')">${c.label}</th>`;
+  }).join('');
+
+  // Summary row
+  const bestPos=models.reduce((b,m)=>m.best_eval?Math.min(b,m.best_eval.pos):b,Infinity);
+  const bestRot=models.reduce((b,m)=>m.best_eval?Math.min(b,m.best_eval.rot):b,Infinity);
+  const totalCk=models.reduce((s,m)=>s+m.checkpoints.length,0);
+  document.getElementById('summaryRow').innerHTML=`<tr class="bg-slate-800/30 text-slate-400 text-[10px]">${cols.map(c=>{
+    switch(c.key){
+      case'id': return'<td class="px-3 py-1.5 font-medium text-slate-500">Summary</td>';
+      case'loss': return`<td class="px-3 py-1.5 font-mono text-emerald-400">best ${fmtNum(bestPos!==Infinity?bestPos:null)}</td>`;
+      case'rot': return`<td class="px-3 py-1.5 font-mono text-emerald-400">best ${fmtNum(bestRot!==Infinity?bestRot:null)}</td>`;
+      case'ckpts': return`<td class="px-3 py-1.5 font-mono">${totalCk}</td>`;
+      case'score': return'<td class="px-3 py-1.5">—</td>';
+      default: return'<td class="px-3 py-1.5">—</td>';
+    }
+  }).join('')}</tr>`;
+
+  // Body
+  document.getElementById('noResults').classList.toggle('hidden',models.length>0);
+  if(!models.length) return;
+  const bestPosVal=Math.min(...models.filter(m=>m.best_eval).map(m=>m.best_eval.pos),Infinity);
+  document.getElementById('tableBody').innerHTML=models.map(m=>{
+    const isBest=m.best_eval&&m.best_eval.pos===bestPosVal;
+    const st=getStatus(m); const enc=m.action_encoding;
+    const tags=getTags(m); const tagsH=tags.map(t=>`<span class="inline-flex items-center px-1 py-0 rounded text-[9px] font-mono bg-slate-800 text-slate-400 border border-slate-700">${t}</span>`).join(' ');
+    const notes=m.superseded_by?`<span class="text-rose-500/70 text-[9px] ml-1">→${m.superseded_by.replace(/^[^-]+-/,'')}</span>`:m.supersedes?`<span class="text-emerald-500/70 text-[9px] ml-1">←fixes ${m.supersedes.replace(/^[^-]+-/,'')}</span>`:'';
+    return `<tr class="border-b border-slate-800/50 hover-card cursor-pointer ${isBest?'bg-emerald-900/10':enc==='delta'?'bg-emerald-500/[0.02]':'bg-sky-500/[0.02]'} ${state.expanded===m.id?'bg-slate-800/30':''}" onclick="toggleDetail('${m.id}')">
+      <td class="px-3 py-2.5"><div class="flex items-center gap-1"><span class="font-medium text-white text-xs">${m.id.replace('lora-full-','').replace('-full-','-').replace(/-abs$/,'').replace(/-delta$/,'')}</span>${notes}</div><div class="flex gap-1 mt-0.5 flex-wrap">${tagsH}</div></td>
+      <td class="px-3 py-2.5 text-slate-300 whitespace-nowrap">${getArch(m)}</td>
+      <td class="px-3 py-2.5"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${enc==='delta'?'bg-emerald-900/30 text-emerald-400 border border-emerald-800/40':'bg-sky-900/30 text-sky-400 border border-sky-800/40'}">${enc}</span></td>
+      <td class="px-3 py-2.5"><span class="text-slate-400 font-mono">${getDataTag(m)}</span></td>
+      <td class="px-3 py-2.5 font-mono ${isBest?'text-emerald-400 font-semibold':'text-slate-300'}">${m.best_eval?fmtNum(m.best_eval.pos):'<span class="text-slate-600">--</span>'}</td>
+      <td class="px-3 py-2.5 font-mono text-slate-300">${m.best_eval?fmtNum(m.best_eval.rot):'<span class="text-slate-600">--</span>'}</td>
+      <td class="px-3 py-2.5 font-mono text-slate-400">${m.registry_score||'<span class="text-slate-600">--</span>'}</td>
+      <td class="px-3 py-2.5 font-mono text-slate-400">${m.checkpoints.length}</td>
+      <td class="px-3 py-2.5">${STATUS_BADGE[st]||'<span class="text-slate-600 text-[10px]">—</span>'}</td>
     </tr>`;
   }).join('');
 
-  // Sort header indicators
-  document.querySelectorAll('th[data-sort]').forEach(th => {
-    th.classList.remove('sort-asc', 'sort-desc');
-    if (th.dataset.sort === sortKey) th.classList.add(sortAsc ? 'sort-asc' : 'sort-desc');
+  // Update header sort indicators
+  document.querySelectorAll('th[data-sort]').forEach(th=>{
+    th.classList.toggle('sort-asc',th.dataset.sort===state.sort.key&&state.sort.asc);
+    th.classList.toggle('sort-desc',th.dataset.sort===state.sort.key&&!state.sort.asc);
   });
 }
 
-// ── Detail cards ──
-function toggleDetail(id) {
-  expandedModels[id] = !expandedModels[id];
-  renderDetails();
+function sortBy(key) {
+  if(state.sort.key===key) state.sort.asc=!state.sort.asc;
+  else { state.sort.key=key; state.sort.asc=true; }
+  rerender();
 }
 
-function renderDetails() {
-  const container = document.getElementById('detailContainer');
-  container.innerHTML = MODELS_DATA.models.map(m => {
-    const open = expandedModels[m.id];
-    const hp = m.hyperparams;
-    const hpKeys = Object.keys(hp).filter(k => !['output_dir','train_metas_path','val_metas_path','models','log_interval','save_interval','seed'].includes(k));
-    const rels = [];
-    if (m.superseded_by) rels.push(`<span class="text-xs text-orange-600">superseded by <strong>${m.superseded_by}</strong></span>`);
-    if (m.supersedes) rels.push(`<span class="text-xs text-blue-600">fixes <strong>${m.supersedes}</strong></span>`);
-    if (m.registry_notes) rels.push(`<span class="text-xs text-gray-500">${m.registry_notes}</span>`);
-    return `<div class="card">
-      <div class="flex items-center justify-between cursor-pointer" onclick="toggleDetail('${m.id}')">
-        <div><h4 class="font-semibold text-gray-800">${m.id}</h4>${rels.length ? '<div class="flex flex-wrap gap-2 mt-1">' + rels.join('') + '</div>' : ''}</div>
-        <span class="text-gray-400 text-xs transform transition-transform ${open ? 'rotate-180' : ''}">▼</span>
+// ═══ DETAIL PANELS ═══
+function toggleDetail(id) {
+  state.expanded=state.expanded===id?null:id;
+  rerender();
+}
+
+function renderDetails(models) {
+  document.getElementById('detailPanels').innerHTML=MODELS_DATA.models.filter(m=>state.expanded===m.id).map(m=>{
+    const hp=m.hyperparams; const hpKeys=Object.keys(hp).filter(k=>!['output_dir','train_metas_path','val_metas_path','models','log_interval','save_interval','seed','betas','weight_decay','max_grad_norm','min_lr_ratio'].includes(k));
+    const evals=m.all_eval_results;
+    return `<div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-4 open">
+      <div class="flex items-start justify-between mb-3">
+        <div><h4 class="text-sm font-semibold text-white">${m.id}</h4>
+          <div class="flex gap-2 mt-1 text-[10px] text-slate-500">
+            ${getStatus(m)?STATUS_BADGE[getStatus(m)]:''}
+            ${m.registry_notes?`<span class="text-slate-500 italic">${m.registry_notes}</span>`:''}
+            ${m.supersedes?`<span class="text-emerald-500/70">← fixes ${m.supersedes}</span>`:''}
+            ${m.superseded_by?`<span class="text-rose-500/70">→ superseded by ${m.superseded_by}</span>`:''}
+          </div>
+        </div>
+        <button class="text-slate-600 hover:text-slate-300 text-xs" onclick="toggleDetail('${m.id}')">✕</button>
       </div>
-      <div class="${open ? 'mt-4' : 'hidden'} space-y-4">
-        ${hpKeys.length > 0 ? `<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          ${hpKeys.map(k => `<div class="bg-gray-50 rounded-lg px-3 py-2"><span class="text-xs text-gray-400">${k}</span><div class="text-sm font-mono text-gray-700">${typeof hp[k] === 'boolean' ? hp[k] : (hp[k] ?? '--')}</div></div>`).join('')}
-        </div>` : (m.registry_method ? `<p class="text-xs text-gray-500">Method: ${m.registry_method} | Data: ${m.registry_data || '?'} | Score: ${m.registry_score || '--'}</p>` : '<p class="text-xs text-gray-400">No training data available.</p>')}
-        ${m.all_eval_results.length > 0 ? `
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-3">
+          ${evals.length>2?`
+          <div><h5 class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Eval Curve</h5>
+            <div style="height:140px"><canvas id="miniChart_${m.id.replace(/[^a-z0-9]/g,'_')}"></canvas></div>
+          </div>`:''}
+          ${m.checkpoints.length>0?`
+          <div><h5 class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Checkpoints: ${m.checkpoints.length}</h5>
+            <div class="flex flex-wrap gap-1">${m.checkpoints.slice(-10).map(c=>`<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono ${c.merged?'bg-violet-900/30 text-violet-400 border border-violet-800/40':'bg-slate-800 text-slate-400 border border-slate-700'}">${c.path}</span>`).join('')}</div></div>`:''}
+        </div>
         <div>
-          <h5 class="text-xs font-semibold text-gray-500 mb-2 uppercase">Eval Progression</h5>
-          <div class="max-h-48 overflow-y-auto"><table class="w-full text-xs">
-            <thead class="bg-gray-50"><tr><th class="px-2 py-1 text-left text-gray-500">Step</th><th class="px-2 py-1 text-left text-gray-500">Pos Loss</th><th class="px-2 py-1 text-left text-gray-500">Rot Loss</th></tr></thead>
-            <tbody>${m.all_eval_results.slice().sort((a,b) => a.step - b.step).map(e => `<tr class="border-b border-gray-50"><td class="px-2 py-1 font-mono">${e.step}</td><td class="px-2 py-1 font-mono">${fmtNum(e.pos)}</td><td class="px-2 py-1 font-mono">${fmtNum(e.rot)}</td></tr>`).join('')}</tbody>
-          </table></div>
-        </div>` : '<p class="text-xs text-gray-400">No eval results yet.</p>'}
-        ${m.checkpoints.length > 0 ? `
-        <div>
-          <h5 class="text-xs font-semibold text-gray-500 mb-2 uppercase">Checkpoints (${m.checkpoints.length})</h5>
-          <div class="flex flex-wrap gap-1">${m.checkpoints.map(c => `<span class="badge badge-gray text-xs">${c.path}</span>`).join('')}</div>
-        </div>` : ''}
+          ${hpKeys.length>0?`<h5 class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Hyperparameters</h5>
+          <div class="grid grid-cols-2 gap-x-3 gap-y-1">${hpKeys.map(k=>`<div class="flex justify-between text-[11px]"><span class="text-slate-500">${k}</span><span class="font-mono text-slate-300">${typeof hp[k]==='boolean'?hp[k]:hp[k]??'<span class="text-slate-600">—</span>'}</span></div>`).join('')}</div>`
+          :'<p class="text-slate-600 text-xs">No training metadata</p>'}
+        </div>
       </div>
+      ${evals.length>0?`
+      <div class="mt-3"><h5 class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Eval Progression</h5>
+        <div class="max-h-32 overflow-y-auto"><table class="w-full text-[10px]"><thead class="text-slate-600"><tr><th class="px-2 py-1 text-left">Step</th><th class="px-2 py-1 text-left">Pos</th><th class="px-2 py-1 text-left">Rot</th></tr></thead>
+        <tbody>${evals.slice().sort((a,b)=>a.step-b.step).map(e=>`<tr class="border-b border-slate-800/30"><td class="px-2 py-0.5 font-mono text-slate-400">${e.step}</td><td class="px-2 py-0.5 font-mono text-slate-300">${fmtNum(e.pos)}</td><td class="px-2 py-0.5 font-mono text-slate-300">${fmtNum(e.rot)}</td></tr>`).join('')}</tbody></table></div>
+      </div>`:''}
     </div>`;
   }).join('');
+
+  // Mini eval curves for expanded models
+  MODELS_DATA.models.filter(m=>state.expanded===m.id).forEach(m=>{
+    if(m.all_eval_results.length<3) return;
+    const id='miniChart_'+m.id.replace(/[^a-z0-9]/g,'_');
+    const ctx=document.getElementById(id); if(!ctx) return;
+    new Chart(ctx, { type:'scatter', data:{ datasets:[{
+      label: m.id, data: m.all_eval_results.map(e=>({x:e.step,y:e.pos})),
+      backgroundColor: m.action_encoding==='delta'?'#34d399':'#38bdf8',
+      borderColor: m.action_encoding==='delta'?'#34d399':'#38bdf8',
+      pointRadius:2, showLine:true, tension:0.1, borderWidth:1.5, fill:false
+    }]}, options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{ x:{display:true, ticks:{color:'#64748b',font:{size:9}}, grid:{color:'#1e293b'}},
+               y:{display:true, title:{display:true, text:'pos loss', color:'#64748b',font:{size:9}}, ticks:{color:'#64748b',font:{size:9}}, grid:{color:'#1e293b'}} }
+    }});
+  });
 }
 
-  // ── Charts ──
-  let barChart, scatterChart, hparamChart;
+// ═══ ANALYSIS CHARTS ═══
+function renderCharts(models) {
+  Object.values(charts).forEach(c=>{if(c)c.destroy();}); charts={};
 
-  const chartColors = ['#3b82f6','#f97316','#22c55e','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#14b8a6','#a855f7','#f43f5e'];
+  const hasEval=models.filter(m=>m.best_eval);
+  const colorList=['#38bdf8','#34d399','#fbbf24','#a78bfa','#f472b6','#fb923c','#2dd4bf','#a3e635','#c084fc'];
 
-  function renderCharts() {
-    const models = MODELS_DATA.models;
+  // Chart 1: Encoding Impact
+  const encCtx=document.getElementById('chartEncoding');
+  if(encCtx){
+    const groups={delta:[],absolute:[]}; hasEval.forEach(m=>{if(groups[m.action_encoding])groups[m.action_encoding].push(m);});
+    const labels=['Absolute','Delta']; const means={absolute:0,delta:0};
+    Object.keys(groups).forEach(k=>{const g=groups[k]; means[k]=g.length?g.reduce((s,m)=>s+m.best_eval.pos,0)/g.length:0;});
+    charts.encoding=new Chart(encCtx,{type:'bar',data:{labels,datasets:[
+      {label:'Pos Loss',data:labels.map(l=>{const g=groups[l==='Absolute'?'absolute':'delta']; return g.length?g.reduce((s,m)=>Math.min(s,m.best_eval.pos),Infinity):null;}),backgroundColor:['rgba(56,189,248,0.7)','rgba(52,211,153,0.7)'],borderRadius:3},
+    ]},options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'best pos='+ctx.raw}}},
+      scales:{x:{ticks:{color:'#64748b',font:{size:10}},grid:{color:'#1e293b'}},y:{beginAtZero:true,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e293b'},title:{display:true,text:'Pos Loss',color:'#64748b',font:{size:9}}}}
+    }});
+  }
 
-    // Bar chart - all models, gray for no-data
-    const barCtx = document.getElementById('barChart').getContext('2d');
-    if (barChart) barChart.destroy();
-    const barData = models.map(m => m.best_eval ? m.best_eval.pos : null);
-    const barColors = models.map(m => {
-      if (!m.best_eval) return 'rgba(209,213,219,0.5)';
-      return m.action_encoding === 'absolute' ? 'rgba(59,130,246,0.8)' : 'rgba(249,115,22,0.8)';
+  // Chart 2: Method Impact
+  const metCtx=document.getElementById('chartMethod');
+  if(metCtx){
+    const groups={'LoRA r=8':[],'LoRA r=32':[],'Full FT':[]};
+    hasEval.forEach(m=>{
+      const r=m.hyperparams.lora_r||8; const mode=m.mode;
+      if(mode==='full') groups['Full FT'].push(m);
+      else if(r<=8) groups['LoRA r=8'].push(m);
+      else groups['LoRA r=32'].push(m);
     });
-    barChart = new Chart(barCtx, {
-      type: 'bar',
-      data: {
-        labels: models.map(m => m.id),
-        datasets: [{
-          label: 'Pos Loss',
-          data: barData,
-          backgroundColor: barColors,
-          borderRadius: 4,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: ctx => ctx.raw == null ? 'No eval data' : 'pos=' + ctx.raw } }
-        },
-        scales: {
-          y: { beginAtZero: true, title: { display: true, text: 'Pos Loss' } },
-          x: { ticks: { maxRotation: 45, minRotation: 0, font: { size: 9 } } }
-        }
-      }
-    });
+    const labels=Object.keys(groups).filter(k=>groups[k].length>0);
+    const colors=['#34d399','#38bdf8','#a78bfa'].slice(0,labels.length);
+    charts.method=new Chart(metCtx,{type:'bar',data:{labels,datasets:[{
+      label:'Best Pos Loss',data:labels.map(l=>groups[l].length?Math.min(...groups[l].map(m=>m.best_eval.pos)):null),
+      backgroundColor:colors,borderRadius:3
+    }]},options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#64748b',font:{size:10}},grid:{color:'#1e293b'}},y:{beginAtZero:true,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e293b'},title:{display:true,text:'Pos Loss',color:'#64748b',font:{size:9}}}}
+    }});
+  }
 
-    // Scatter chart - eval progression + registry score markers
-    const scatterCtx = document.getElementById('scatterChart').getContext('2d');
-    if (scatterChart) scatterChart.destroy();
-    const modelsWithPoints = models.filter(m => m.all_eval_results.length >= 3);
-    const scatterDatasets = modelsWithPoints.map((m, i) => ({
-      label: m.id,
-      data: m.all_eval_results.map(e => ({ x: e.step, y: e.pos })),
-      backgroundColor: chartColors[i % chartColors.length],
-      borderColor: chartColors[i % chartColors.length],
-      pointRadius: 3, pointHoverRadius: 6,
-      showLine: true, tension: 0.1, borderWidth: 1, fill: false,
-    }));
-    const modelsWithScore = models.filter(m => !m.best_eval && m.registry_score);
-    modelsWithScore.forEach((m, i) => {
-      const s = parseFloat(m.registry_score);
-      if (!isNaN(s)) scatterDatasets.push({
-        label: m.id + ' (score)',
-        data: [{ x: 0, y: s }],
-        backgroundColor: chartColors[(modelsWithPoints.length + i) % chartColors.length],
-        pointRadius: 6, pointStyle: 'triangle',
-      });
-    });
-    scatterChart = new Chart(scatterCtx, {
-      type: 'scatter',
-      data: { datasets: scatterDatasets },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 9 }, padding: 6 } }
-        },
-        scales: {
-          x: { title: { display: true, text: 'Training Steps' } },
-          y: { title: { display: true, text: 'Pos Loss' }, min: 0 }
-        }
-      }
-    });
+  // Chart 3: Data Impact
+  const datCtx=document.getElementById('chartData');
+  if(datCtx){
+    const full=hasEval.filter(m=>getDataTag(m)==='full'); const sub=hasEval.filter(m=>getDataTag(m)==='sub');
+    const fullData=full.map(m=>({x:0+Math.random()*0.2-0.1,y:m.best_eval.pos,id:m.id,enc:m.action_encoding}));
+    const subData=sub.map(m=>({x:1+Math.random()*0.2-0.1,y:m.best_eval.pos,id:m.id,enc:m.action_encoding}));
+    charts.data=new Chart(datCtx,{type:'scatter',data:{datasets:[
+      {label:'Full',data:fullData,backgroundColor:'rgba(52,211,153,0.7)',pointRadius:5},
+      {label:'Sub',data:subData,backgroundColor:'rgba(56,189,248,0.7)',pointRadius:5}
+    ]},options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:10},boxWidth:10,padding:8}}},
+      scales:{x:{type:'linear',min:-0.5,max:1.5,ticks:{callback:v=>v<0.5?'Full':'Sub',color:'#64748b',font:{size:10}},grid:{display:false}},
+               y:{beginAtZero:true,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e293b'},title:{display:true,text:'Pos Loss',color:'#64748b',font:{size:9}}}}
+    }});
+  }
 
-    // HParam chart - only models with hyperparams
-    const hparamCtx = document.getElementById('hparamChart').getContext('2d');
-    if (hparamChart) hparamChart.destroy();
-    const hparamKeys = ['batch_size', 'learning_rate', 'iters', 'warmup_steps', 'freeze_steps'];
-    const modelsWithHp = models.filter(m => Object.keys(m.hyperparams).length > 0);
-    const hparamDatasets = modelsWithHp.map((m, i) => ({
-      label: m.id,
-      data: hparamKeys.map(k => {
-        let v = m.hyperparams[k];
-        if (v == null && m.train_params) v = m.train_params[k];
-        if (k === 'learning_rate') return v * 10000;
-        if (k === 'iters') return v / 1000;
-        return v ?? 0;
-      }),
-      backgroundColor: chartColors[i % chartColors.length] + 'cc',
-      borderColor: chartColors[i % chartColors.length],
-      borderWidth: 1, borderRadius: 3,
-    }));
-    hparamChart = new Chart(hparamCtx, {
-      type: 'bar',
-      data: { labels: hparamKeys.map(k => k === 'learning_rate' ? 'lr (x10-4)' : k === 'iters' ? 'iters (k)' : k), datasets: hparamDatasets },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, padding: 6 } } },
-        scales: { y: { title: { display: true, text: 'Value (scaled)' } } }
-      }
-    });
-  }// ── Event handlers ──
-document.getElementById('encodingFilter').addEventListener('change', () => { renderTable(); });
-document.getElementById('modeFilter').addEventListener('change', () => { renderTable(); });
-document.getElementById('searchInput').addEventListener('input', () => { renderTable(); });
+  // Chart 4: Training Dynamics
+  const dynCtx=document.getElementById('chartDynamics');
+  if(dynCtx){
+    const pts=hasEval.filter(m=>m.hyperparams.iters).map(m=>({x:m.hyperparams.iters,y:m.best_eval.pos,id:m.id,enc:m.action_encoding,ckts:m.checkpoints.length}));
+    charts.dynamics=new Chart(dynCtx,{type:'scatter',data:{datasets:[{
+      label:'Models',data:pts,backgroundColor:pts.map(p=>p.enc==='delta'?'rgba(52,211,153,0.7)':'rgba(56,189,248,0.7)'),
+      pointRadius:pts.map(p=>Math.min(8,3+p.ckts/5)),pointHoverRadius:8
+    }]},options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const p=pts[ctx.dataIndex]; return p.id+': '+p.y+' ('+p.ckts+' ckpts)';}}}},
+      scales:{x:{title:{display:true,text:'Training Steps',color:'#64748b',font:{size:9}},ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e293b'}},
+              y:{beginAtZero:true,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e293b'},title:{display:true,text:'Pos Loss',color:'#64748b',font:{size:9}}}}
+    }});
+  }
+}
 
-document.querySelectorAll('th[data-sort]').forEach(th => {
-  th.addEventListener('click', () => {
-    const key = th.dataset.sort;
-    if (sortKey === key) sortAsc = !sortAsc;
-    else { sortKey = key; sortAsc = true; }
-    renderTable();
+// ═══ EVAL CURVES ═══
+function renderEvalCurves(filteredModels) {
+  const models=filteredModels||getFiltered();
+  if(charts.evalCurves) charts.evalCurves.destroy();
+
+  const ctx=document.getElementById('chartEvalCurves');
+  if(!ctx) return;
+  const logScale=document.getElementById('logScale')?.checked;
+  const bestOnly=document.getElementById('showBestOnly')?.checked;
+  const bestPos=Math.min(...models.filter(m=>m.best_eval).map(m=>m.best_eval.pos),Infinity);
+
+  let withEval=models.filter(m=>m.all_eval_results.length>=3);
+  if(bestOnly) withEval=withEval.filter(m=>m.best_eval&&m.best_eval.pos===bestPos);
+
+  const chartColors=['#38bdf8','#34d399','#fbbf24','#a78bfa','#f472b6','#fb923c','#2dd4bf','#a3e635','#c084fc','#f43f5e','#eab308'];
+  const datasets=withEval.map((m,i)=>{
+    const isBest=m.best_eval&&m.best_eval.pos===bestPos;
+    return {
+      label: m.id, data: m.all_eval_results.map(e=>({x:e.step,y:e.pos})).sort((a,b)=>a.x-b.x),
+      backgroundColor: chartColors[i%chartColors.length],
+      borderColor: chartColors[i%chartColors.length],
+      pointRadius: isBest?2.5:1, pointHoverRadius: 5,
+      borderWidth: isBest?2:1, tension: 0.15, fill: false, showLine: true,
+      hidden: !isBest && bestOnly,
+    };
+  });
+
+  charts.evalCurves=new Chart(ctx,{type:'scatter',data:{datasets},options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:9},boxWidth:10,padding:6,usePointStyle:true}},
+    },
+    scales:{
+      x:{title:{display:true,text:'Training Steps',color:'#64748b',font:{size:10}}, ticks:{color:'#64748b',font:{size:9}}, grid:{color:'#1e293b'}},
+      y:{type:logScale?'logarithmic':'linear', title:{display:true,text:'Pos Loss',color:'#64748b',font:{size:10}}, ticks:{color:'#64748b',font:{size:9}}, grid:{color:'#1e293b'}, min:logScale?0.0001:0}
+    },
+    interaction:{mode:'index',intersect:false},
+    hover:{mode:'index',intersect:false}
+  }});
+}
+
+// ═══ EVENT HANDLERS ═══
+['encFilter','archFilter','dataFilter','statusFilter'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',()=>{
+    const map={encFilter:'encoding',archFilter:'arch',dataFilter:'data',statusFilter:'status'};
+    state.filters[map[id]]=document.getElementById(id).value;
+    rerender();
   });
 });
+document.getElementById('searchInput').addEventListener('input',()=>{
+  state.filters.search=document.getElementById('searchInput').value.toLowerCase();
+  rerender();
+});
 
-// ── Init ──
-renderSummary();
-renderTable();
-renderDetails();
-renderCharts();
+// ═══ INIT ═══
+document.fonts.ready.then(()=>rerender());
+rerender();
 </script>
 </body>
 </html>
