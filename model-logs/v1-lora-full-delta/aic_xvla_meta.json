@@ -1,0 +1,5 @@
+{
+  "action_encoding": "delta",
+  "mode": "peft",
+  "wandb_run_name": "v1-lora-full-delta"
+}
