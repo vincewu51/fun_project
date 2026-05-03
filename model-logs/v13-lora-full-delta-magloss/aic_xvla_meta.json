@@ -1,0 +1,6 @@
+{
+  "action_encoding": "delta",
+  "mode": "peft",
+  "wandb_run_name": "v13-lora-full-delta-magloss",
+  "num_actions": null
+}

@@ -1,0 +1,13 @@
+13:06:15 | INFO | peft_train | Args: Namespace(models='2toINF/X-VLA-Pt', output_dir='/home/yifeng/aic_xvla_data/v14-lora-full-delta-magloss', train_metas_path='/home/yifeng/aic_xvla_data/train_meta.json', val_metas_path='/home/yifeng/aic_xvla_data/val_meta.json', eval_interval=1000, batch_size=2, learning_rate=0.0005, learning_coef=0.1, weight_decay=0.0, betas=(0.9, 0.95), max_grad_norm=1.0, iters=40000, freeze_steps=0, warmup_steps=50, use_cosine_decay=True, min_lr_ratio=0.05, save_interval=10000, log_interval=20, seed=0, freeze_vlm=False, vlm_lr=None, head_lr=None, num_actions=None, lora_r=None, lora_alpha=None)
+13:06:17 | INFO | peft_train | ✅ Val dataloader ready (/home/yifeng/aic_xvla_data/val_meta.json)
+13:06:17 | INFO | peft_train | 🚀 Start training for 40000 iterations | world_size=1
+13:06:21 | INFO | peft_train | [0/40000] loss=34.1144 lr_core=0.00e+00 lr_vlm=0.00e+00 (0.19s/it)
+13:06:24 | INFO | peft_train | [20/40000] loss=12.7160 lr_core=2.00e-04 lr_vlm=2.00e-05 (0.12s/it)
+13:06:26 | INFO | peft_train | [40/40000] loss=9.7323 lr_core=4.00e-04 lr_vlm=4.00e-05 (0.12s/it)
+13:06:29 | INFO | peft_train | [60/40000] loss=9.2748 lr_core=5.00e-04 lr_vlm=5.00e-05 (0.12s/it)
+13:06:31 | INFO | peft_train | [80/40000] loss=9.1743 lr_core=5.00e-04 lr_vlm=5.00e-05 (0.12s/it)
+13:06:33 | INFO | peft_train | [100/40000] loss=9.2021 lr_core=5.00e-04 lr_vlm=5.00e-05 (0.12s/it)
+13:06:36 | INFO | peft_train | [120/40000] loss=9.1624 lr_core=5.00e-04 lr_vlm=5.00e-05 (0.12s/it)
+13:06:38 | INFO | peft_train | [140/40000] loss=9.1184 lr_core=5.00e-04 lr_vlm=5.00e-05 (0.12s/it)
+13:06:41 | INFO | peft_train | [160/40000] loss=9.0984 lr_core=5.00e-04 lr_vlm=5.00e-05 (0.12s/it)
+13:06:43 | INFO | peft_train | [180/40000] loss=9.1459 lr_core=5.00e-04 lr_vlm=5.00e-05 (0.12s/it)
