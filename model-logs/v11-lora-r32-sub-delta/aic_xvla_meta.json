@@ -1,0 +1,8 @@
+{
+  "action_encoding": "delta",
+  "mode": "peft",
+  "wandb_run_name": "v11-lora-r32-sub-delta",
+  "lora_r": 32,
+  "lora_alpha": 64,
+  "cmd_mode_recommended": "pose"
+}

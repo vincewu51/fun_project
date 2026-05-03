@@ -1,0 +1,8 @@
+{
+  "action_encoding": "absolute",
+  "mode": "peft",
+  "wandb_run_name": "v5-lora-r32-sub-abs-velmode",
+  "lora_r": 32,
+  "lora_alpha": 64,
+  "cmd_mode_recommended": "velocity"
+}
