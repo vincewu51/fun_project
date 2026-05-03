@@ -176,12 +176,19 @@ function buildAdvancedFilters() {
 <!-- DETAIL PANELS -->
 <section id="detailPanels" class="space-y-1"></section>
 
-<!-- ANALYSIS CHARTS 2x2 -->
-<section class="grid grid-cols-1 lg:grid-cols-2 gap-4 anim-in anim-in-d5">
-  <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4"><h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Encoding Impact</h3><div style="height:200px"><canvas id="chartEncoding"></canvas></div></div>
-  <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4"><h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Method Impact</h3><div style="height:200px"><canvas id="chartMethod"></canvas></div></div>
-  <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4"><h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Data Impact</h3><div style="height:200px"><canvas id="chartData"></canvas></div></div>
-  <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4"><h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Training Dynamics</h3><div style="height:200px"><canvas id="chartDynamics"></canvas></div></div>
+<!-- LEADERBOARD -->
+<section class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4 anim-in anim-in-d5">
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Offline Eval Leaderboard</h3>
+    <div class="flex items-center gap-2 text-[10px]">
+      <select id="leaderboardMetric" onchange="rerender()" class="text-[10px] bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-slate-300 outline-none focus:border-slate-500">
+        <option value="pos_mae_m">Pos MAE</option>
+        <option value="ang_mae_deg">Ang MAE</option>
+        <option value="val_loss">Val Loss</option>
+      </select>
+    </div>
+  </div>
+  <div style="height:280px"><canvas id="chartLeaderboard"></canvas></div>
 </section>
 
 <!-- EVAL CURVES -->
@@ -191,33 +198,22 @@ function buildAdvancedFilters() {
     <div class="flex items-center gap-3 text-[10px]">
       <label class="flex items-center gap-1.5 text-slate-500 cursor-pointer"><input type="checkbox" id="logScale" checked class="accent-emerald-500" onchange="renderEvalCurves()"><span>Log scale</span></label>
       <label class="flex items-center gap-1.5 text-slate-500 cursor-pointer"><input type="checkbox" id="showBestOnly" class="accent-emerald-500" onchange="renderEvalCurves()"><span>Best only</span></label>
+      <label class="flex items-center gap-1.5 text-slate-500 cursor-pointer"><input type="checkbox" id="showRot" class="accent-emerald-500" onchange="renderEvalCurves()"><span>Show rot</span></label>
     </div>
   </div>
   <div style="height:280px"><canvas id="chartEvalCurves"></canvas></div>
 </section>
 
-<!-- HYPERPARAMETER EXPLORER -->
-<section class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4 anim-in anim-in-d5">
-  <div class="flex items-center justify-between mb-3">
-    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Hyperparameter Explorer</h3>
-    <div class="flex items-center gap-2 text-[10px]">
-      <span class="text-slate-500">X-axis</span>
-      <select id="explorerX" onchange="rerender()" class="text-[10px] bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-slate-300 outline-none focus:border-slate-500">
-        <option value="iters">Iters</option>
-        <option value="learning_rate">Learning Rate</option>
-        <option value="batch_size">Batch Size</option>
-        <option value="warmup_steps">Warmup Steps</option>
-        <option value="freeze_steps">Freeze Steps</option>
-        <option value="lora_r">LoRA Rank</option>
-        <option value="learning_coef">Learning Coef</option>
-        <option value="num_actions">Chunk Size</option>
-        <option value="save_interval">Save Interval</option>
-        <option value="weight_decay">Weight Decay</option>
-      </select>
-      <label class="flex items-center gap-1 text-slate-500 cursor-pointer"><input type="checkbox" id="explorerLogX" onchange="rerender()" class="accent-emerald-500"><span>Log X</span></label>
-    </div>
+<!-- DATA CORRELATION -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-4 anim-in anim-in-d5">
+  <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4">
+    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Training Steps vs Pos MAE</h3>
+    <div style="height:220px"><canvas id="chartCorrSteps"></canvas></div>
   </div>
-  <div style="height:240px"><canvas id="chartExplorer"></canvas></div>
+  <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4">
+    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Data Size vs Pos MAE</h3>
+    <div style="height:220px"><canvas id="chartCorrData"></canvas></div>
+  </div>
 </section>
 
 </main>
@@ -234,8 +230,8 @@ function buildAdvancedFilters() {
 
 <script>
 // ═══ DATA ═══
-const MODELS_DATA = {"models": [{"id": "v7-lora-full-delta-short8", "action_encoding": "delta", "mode": "peft", "num_actions": 8, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/pp823u8f", "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 12000, "path": "ckpt-12000", "is_lora": true, "merged": false}, {"step": 14000, "path": "ckpt-14000", "is_lora": true, "merged": false}, {"step": 16000, "path": "ckpt-16000", "is_lora": true, "merged": false}, {"step": 18000, "path": "ckpt-18000", "is_lora": true, "merged": false}, {"step": 2000, "path": "ckpt-2000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 22000, "path": "ckpt-22000", "is_lora": true, "merged": false}, {"step": 24000, "path": "ckpt-24000", "is_lora": true, "merged": false}, {"step": 26000, "path": "ckpt-26000", "is_lora": true, "merged": false}, {"step": 28000, "path": "ckpt-28000", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}, {"step": 32000, "path": "ckpt-32000", "is_lora": true, "merged": false}, {"step": 34000, "path": "ckpt-34000", "is_lora": true, "merged": false}, {"step": 36000, "path": "ckpt-36000", "is_lora": true, "merged": false}, {"step": 38000, "path": "ckpt-38000", "is_lora": true, "merged": false}, {"step": 4000, "path": "ckpt-4000", "is_lora": true, "merged": false}, {"step": 40000, "path": "ckpt-40000", "is_lora": true, "merged": false}, {"step": 6000, "path": "ckpt-6000", "is_lora": true, "merged": false}, {"step": 8000, "path": "ckpt-8000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/v7-lora-full-delta-short8", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 2, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 40000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 2000, "log_interval": 20, "seed": 0, "freeze_vlm": false, "num_actions": 8}, "best_eval": {"step": 27000, "pos": 0.0006, "rot": 0.0004}, "all_eval_results": [{"step": 1000, "pos": 0.0221, "rot": 0.0161}, {"step": 2000, "pos": 0.0234, "rot": 0.0054}, {"step": 3000, "pos": 0.0147, "rot": 0.0029}, {"step": 4000, "pos": 0.0077, "rot": 0.0037}, {"step": 5000, "pos": 0.0021, "rot": 0.0071}, {"step": 6000, "pos": 0.0029, "rot": 0.0035}, {"step": 7000, "pos": 0.0123, "rot": 0.0057}, {"step": 8000, "pos": 0.0051, "rot": 0.0025}, {"step": 9000, "pos": 0.0124, "rot": 0.0044}, {"step": 10000, "pos": 0.0048, "rot": 0.0043}, {"step": 11000, "pos": 0.0015, "rot": 0.0058}, {"step": 12000, "pos": 0.0059, "rot": 0.0053}, {"step": 13000, "pos": 0.0033, "rot": 0.0026}, {"step": 14000, "pos": 0.0085, "rot": 0.0039}, {"step": 15000, "pos": 0.0062, "rot": 0.0057}, {"step": 16000, "pos": 0.0024, "rot": 0.0022}, {"step": 17000, "pos": 0.0083, "rot": 0.0023}, {"step": 18000, "pos": 0.0032, "rot": 0.0008}, {"step": 19000, "pos": 0.0055, "rot": 0.0005}, {"step": 20000, "pos": 0.0117, "rot": 0.0015}, {"step": 21000, "pos": 0.0048, "rot": 0.0018}, {"step": 22000, "pos": 0.0037, "rot": 0.0016}, {"step": 23000, "pos": 0.003, "rot": 0.0005}, {"step": 24000, "pos": 0.0021, "rot": 0.0004}, {"step": 25000, "pos": 0.0015, "rot": 0.0005}, {"step": 26000, "pos": 0.0017, "rot": 0.0008}, {"step": 27000, "pos": 0.0006, "rot": 0.0004}, {"step": 28000, "pos": 0.0036, "rot": 0.0001}, {"step": 29000, "pos": 0.0015, "rot": 0.0004}, {"step": 30000, "pos": 0.0014, "rot": 0.0003}, {"step": 31000, "pos": 0.001, "rot": 0.0007}, {"step": 32000, "pos": 0.0014, "rot": 0.0006}, {"step": 33000, "pos": 0.0015, "rot": 0.0004}, {"step": 34000, "pos": 0.0013, "rot": 0.0001}, {"step": 35000, "pos": 0.0017, "rot": 0.0004}, {"step": 36000, "pos": 0.0019, "rot": 0.0002}, {"step": 37000, "pos": 0.0009, "rot": 0.0001}, {"step": 38000, "pos": 0.0008, "rot": 0.0002}, {"step": 39000, "pos": 0.0013, "rot": 0.0001}], "training_complete": true, "registry_status": "evaluated", "registry_method": "LoRA r=8, num_actions=8", "registry_data": "full", "registry_eval_score": {"total": 3.0, "trials": 1}, "registry_offline_eval": {"pos_mae_m": 0.002915996626490875, "pos_max_m": null, "ang_mae_deg": 3.211089193046928, "ang_max_deg": null}, "registry_notes": "Reaches 9cm but collides with task board.", "registry_version": "v7", "superseded_by": null, "supersedes": null}, {"id": "v10-lora-full-abs-continued", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/d4g3uulp", "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 5000, "path": "ckpt-5000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "/home/yifeng/aic_xvla_data/xvla_absolute/ckpt-20000_merged", "output_dir": "/home/yifeng/aic_xvla_data/xvla_absolute_continued", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 2, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 20000, "freeze_steps": 200, "warmup_steps": 50, "use_cosine_decay": false, "min_lr_ratio": 0.1, "save_interval": 5000, "log_interval": 20, "seed": 0}, "best_eval": {"step": 6000, "pos": 0.0041, "rot": 0.0003}, "all_eval_results": [{"step": 1000, "pos": 0.0222, "rot": 0.0017}, {"step": 2000, "pos": 0.0089, "rot": 0.0004}, {"step": 3000, "pos": 0.0251, "rot": 0.0016}, {"step": 4000, "pos": 0.0305, "rot": 0.002}, {"step": 5000, "pos": 0.0593, "rot": 0.001}, {"step": 6000, "pos": 0.0041, "rot": 0.0003}, {"step": 7000, "pos": 0.0163, "rot": 0.0012}, {"step": 8000, "pos": 0.0266, "rot": 0.0009}, {"step": 9000, "pos": 0.0199, "rot": 0.0005}, {"step": 10000, "pos": 0.1576, "rot": 0.0023}, {"step": 11000, "pos": 0.18, "rot": 0.0009}, {"step": 12000, "pos": 0.0522, "rot": 0.0005}, {"step": 13000, "pos": 0.0725, "rot": 0.0011}, {"step": 14000, "pos": 0.0175, "rot": 0.0013}, {"step": 15000, "pos": 0.0064, "rot": 0.001}, {"step": 16000, "pos": 0.0187, "rot": 0.0027}, {"step": 17000, "pos": 0.0085, "rot": 0.0013}, {"step": 18000, "pos": 0.0269, "rot": 0.0004}, {"step": 19000, "pos": 0.007, "rot": 0.0008}], "training_complete": true, "registry_status": "evaluated", "registry_method": "LoRA r=8, continued from v2", "registry_data": "full", "registry_eval_score": {"total": 3.0, "trials": 1}, "registry_offline_eval": {"pos_mae_m": 0.012673321204446766, "pos_max_m": null, "ang_mae_deg": 1.4096080190734295, "ang_max_deg": null}, "registry_notes": "Continued from v2 merged weights.", "registry_version": "v10", "superseded_by": null, "supersedes": null}, {"id": "v8-lora-r32-full-abs-velmode", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/x6bpqpd6", "checkpoints": [{"step": 10500, "path": "ckpt-10500", "is_lora": true, "merged": false}, {"step": 12000, "path": "ckpt-12000", "is_lora": true, "merged": false}, {"step": 13500, "path": "ckpt-13500", "is_lora": true, "merged": false}, {"step": 1500, "path": "ckpt-1500", "is_lora": true, "merged": false}, {"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 16500, "path": "ckpt-16500", "is_lora": true, "merged": false}, {"step": 18000, "path": "ckpt-18000", "is_lora": true, "merged": false}, {"step": 19500, "path": "ckpt-19500", "is_lora": true, "merged": false}, {"step": 21000, "path": "ckpt-21000", "is_lora": true, "merged": false}, {"step": 22500, "path": "ckpt-22500", "is_lora": true, "merged": false}, {"step": 24000, "path": "ckpt-24000", "is_lora": true, "merged": false}, {"step": 25500, "path": "ckpt-25500", "is_lora": true, "merged": false}, {"step": 27000, "path": "ckpt-27000", "is_lora": true, "merged": false}, {"step": 28500, "path": "ckpt-28500", "is_lora": true, "merged": false}, {"step": 3000, "path": "ckpt-3000", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}, {"step": 4500, "path": "ckpt-4500", "is_lora": true, "merged": false}, {"step": 6000, "path": "ckpt-6000", "is_lora": true, "merged": false}, {"step": 7500, "path": "ckpt-7500", "is_lora": true, "merged": false}, {"step": 9000, "path": "ckpt-9000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/v8-lora-r32-full-abs-velmode", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 1, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 30000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 1500, "log_interval": 20, "seed": 0, "freeze_vlm": false, "lora_r": 32, "lora_alpha": 64}, "best_eval": {"step": 21000, "pos": 0.0052, "rot": 0.0005}, "all_eval_results": [{"step": 1000, "pos": 0.5118, "rot": 0.0057}, {"step": 2000, "pos": 0.4405, "rot": 0.0229}, {"step": 3000, "pos": 0.0713, "rot": 0.033}, {"step": 4000, "pos": 1.1026, "rot": 0.0054}, {"step": 5000, "pos": 1.4872, "rot": 0.0029}, {"step": 6000, "pos": 0.2191, "rot": 0.0062}, {"step": 7000, "pos": 0.478, "rot": 0.0174}, {"step": 8000, "pos": 1.431, "rot": 0.0064}, {"step": 9000, "pos": 0.2977, "rot": 0.0055}, {"step": 10000, "pos": 0.0603, "rot": 0.0018}, {"step": 11000, "pos": 0.2271, "rot": 0.0086}, {"step": 12000, "pos": 0.5853, "rot": 0.0055}, {"step": 13000, "pos": 0.1429, "rot": 0.003}, {"step": 14000, "pos": 0.3994, "rot": 0.0016}, {"step": 15000, "pos": 0.0242, "rot": 0.0023}, {"step": 16000, "pos": 0.0321, "rot": 0.0012}, {"step": 17000, "pos": 0.0591, "rot": 0.0013}, {"step": 18000, "pos": 0.0092, "rot": 0.0008}, {"step": 19000, "pos": 0.0093, "rot": 0.0002}, {"step": 20000, "pos": 0.0894, "rot": 0.0005}, {"step": 21000, "pos": 0.0052, "rot": 0.0005}, {"step": 22000, "pos": 0.0084, "rot": 0.0006}, {"step": 23000, "pos": 0.0144, "rot": 0.0005}, {"step": 24000, "pos": 0.0136, "rot": 0.0003}, {"step": 25000, "pos": 0.0091, "rot": 0.0008}, {"step": 26000, "pos": 0.0206, "rot": 0.0002}, {"step": 27000, "pos": 0.0153, "rot": 0.0002}, {"step": 28000, "pos": 0.0181, "rot": 0.0003}, {"step": 29000, "pos": 0.0297, "rot": 0.0009}], "training_complete": true, "registry_status": "evaluated", "registry_method": "LoRA r=32, vel mode", "registry_data": "full", "registry_eval_score": {"total": 20.1, "trials": 1}, "registry_offline_eval": {"pos_mae_m": 0.017557824497583918, "pos_max_m": null, "ang_mae_deg": 2.650929637226466, "ang_max_deg": null}, "registry_notes": "", "registry_version": "v8", "superseded_by": null, "supersedes": null}, {"id": "v3-lora-sub-abs", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/zv6nup3i", "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}, {"step": 40000, "path": "ckpt-40000", "is_lora": true, "merged": false}, {"step": 50000, "path": "ckpt-50000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/xvla_lora_sub", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta_sub2.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta_sub2.json", "eval_interval": 1000, "batch_size": 2, "learning_rate": 0.0005, "learning_coef": 0.1, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 50000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 10000, "log_interval": 20, "seed": 0, "freeze_vlm": false}, "best_eval": {"step": 32000, "pos": 0.0055, "rot": 0.0026}, "all_eval_results": [{"step": 1000, "pos": 0.206, "rot": 0.0066}, {"step": 2000, "pos": 0.3079, "rot": 0.0094}, {"step": 3000, "pos": 0.0252, "rot": 0.002}, {"step": 4000, "pos": 0.1129, "rot": 0.0048}, {"step": 5000, "pos": 0.1807, "rot": 0.0015}, {"step": 6000, "pos": 0.0616, "rot": 0.002}, {"step": 7000, "pos": 0.1053, "rot": 0.0028}, {"step": 8000, "pos": 0.2072, "rot": 0.0018}, {"step": 9000, "pos": 0.0348, "rot": 0.0019}, {"step": 10000, "pos": 0.0559, "rot": 0.0005}, {"step": 11000, "pos": 0.0311, "rot": 0.0024}, {"step": 12000, "pos": 0.2723, "rot": 0.0027}, {"step": 13000, "pos": 0.0723, "rot": 0.0007}, {"step": 14000, "pos": 0.2426, "rot": 0.0015}, {"step": 15000, "pos": 0.1088, "rot": 0.0012}, {"step": 16000, "pos": 0.0402, "rot": 0.0009}, {"step": 17000, "pos": 0.2817, "rot": 0.0034}, {"step": 18000, "pos": 0.0395, "rot": 0.0015}, {"step": 19000, "pos": 0.1126, "rot": 0.0011}, {"step": 20000, "pos": 0.0354, "rot": 0.0019}, {"step": 21000, "pos": 0.0641, "rot": 0.0016}, {"step": 22000, "pos": 0.0549, "rot": 0.0014}, {"step": 23000, "pos": 0.0558, "rot": 0.0004}, {"step": 24000, "pos": 0.0975, "rot": 0.0037}, {"step": 25000, "pos": 0.1057, "rot": 0.0006}, {"step": 26000, "pos": 0.0611, "rot": 0.0029}, {"step": 27000, "pos": 0.0402, "rot": 0.0024}, {"step": 28000, "pos": 0.0466, "rot": 0.0006}, {"step": 29000, "pos": 0.0347, "rot": 0.0035}, {"step": 30000, "pos": 0.0349, "rot": 0.001}, {"step": 31000, "pos": 0.0528, "rot": 0.0008}, {"step": 32000, "pos": 0.0055, "rot": 0.0026}, {"step": 33000, "pos": 0.0077, "rot": 0.0009}, {"step": 34000, "pos": 0.0281, "rot": 0.0025}, {"step": 35000, "pos": 0.0209, "rot": 0.0021}, {"step": 36000, "pos": 0.033, "rot": 0.0011}, {"step": 37000, "pos": 0.0379, "rot": 0.0017}, {"step": 38000, "pos": 0.0348, "rot": 0.0019}, {"step": 39000, "pos": 0.0526, "rot": 0.0011}, {"step": 40000, "pos": 0.0392, "rot": 0.0013}, {"step": 41000, "pos": 0.029, "rot": 0.0008}, {"step": 42000, "pos": 0.046, "rot": 0.0004}, {"step": 43000, "pos": 0.0129, "rot": 0.0008}, {"step": 44000, "pos": 0.0117, "rot": 0.0007}, {"step": 45000, "pos": 0.0299, "rot": 0.0007}, {"step": 46000, "pos": 0.0254, "rot": 0.0004}, {"step": 47000, "pos": 0.0174, "rot": 0.0009}, {"step": 48000, "pos": 0.0112, "rot": 0.0008}, {"step": 49000, "pos": 0.0164, "rot": 0.0005}], "training_complete": true, "registry_status": "evaluated", "registry_method": "LoRA r=8, coef=0.1", "registry_data": "sub", "registry_eval_score": {"total": 15.0, "trials": 3, "successful": 1}, "registry_offline_eval": {"pos_mae_m": 0.016382971577042105, "pos_max_m": null, "ang_mae_deg": 2.9617178687226953, "ang_max_deg": null}, "registry_notes": "Robot stuck.", "registry_version": "v3", "superseded_by": null, "supersedes": null}, {"id": "v2-lora-full-abs", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/xx18ktid", "checkpoints": [{"step": 1000, "path": "ckpt-1000", "is_lora": true, "merged": false}, {"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 2000, "path": "ckpt-2000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000_merged", "is_lora": false, "merged": true}, {"step": 3000, "path": "ckpt-3000", "is_lora": true, "merged": false}, {"step": 5000, "path": "ckpt-5000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/xvla_absolute", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 1, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 3000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": false, "min_lr_ratio": 0.1, "save_interval": 1000, "log_interval": 20, "seed": 0}, "best_eval": {"step": 16000, "pos": 0.0089, "rot": 0.0008}, "all_eval_results": [{"step": 1000, "pos": 0.0765, "rot": 0.0341}, {"step": 2000, "pos": 0.0868, "rot": 0.0196}, {"step": 1000, "pos": 0.1616, "rot": 0.0409}, {"step": 2000, "pos": 0.0301, "rot": 0.0023}, {"step": 3000, "pos": 0.0222, "rot": 0.0007}, {"step": 4000, "pos": 0.1444, "rot": 0.0032}, {"step": 5000, "pos": 0.0352, "rot": 0.0092}, {"step": 6000, "pos": 0.0138, "rot": 0.0036}, {"step": 7000, "pos": 0.0123, "rot": 0.0003}, {"step": 8000, "pos": 0.0486, "rot": 0.0028}, {"step": 9000, "pos": 0.1041, "rot": 0.0006}, {"step": 10000, "pos": 0.2063, "rot": 0.0059}, {"step": 11000, "pos": 0.2742, "rot": 0.0009}, {"step": 12000, "pos": 0.1172, "rot": 0.0011}, {"step": 13000, "pos": 0.128, "rot": 0.0008}, {"step": 14000, "pos": 0.0122, "rot": 0.0006}, {"step": 15000, "pos": 0.2038, "rot": 0.0039}, {"step": 16000, "pos": 0.0089, "rot": 0.0008}, {"step": 17000, "pos": 0.0153, "rot": 0.0006}, {"step": 18000, "pos": 0.0384, "rot": 0.0045}, {"step": 19000, "pos": 0.0203, "rot": 0.0014}], "training_complete": true, "registry_status": "trained", "registry_method": "LoRA r=8, lr=5e-4", "registry_data": "full", "registry_eval_score": {"total": 63, "trials": 3, "raw": "63/300 (legacy scoring)"}, "registry_offline_eval": {"pos_mae_m": 0.013159141255496618, "pos_max_m": null, "ang_mae_deg": 2.0699921200285907, "ang_max_deg": null}, "registry_notes": "", "registry_version": "v2", "superseded_by": null, "supersedes": null}, {"id": "v4-fullft-full-abs", "action_encoding": "absolute", "mode": "full", "num_actions": null, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/w3zc7sc3", "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": false, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": false, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/xvla_full_ft", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "batch_size": 2, "learning_rate": 0.0001, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 100000, "freeze_steps": 1000, "warmup_steps": 2000, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 10000, "log_interval": 20, "seed": 0, "freeze_vlm": true}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "evaluated", "registry_method": "Full FT, frozen VLM", "registry_data": "full", "registry_eval_score": {"total": 3.0, "trials": 1}, "registry_offline_eval": {"pos_mae_m": 0.014644248306401621, "pos_max_m": null, "ang_mae_deg": 3.111748750175023, "ang_max_deg": null}, "registry_notes": "", "registry_version": "v4", "superseded_by": null, "supersedes": null}, {"id": "v5-lora-r32-sub-abs-velmode", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "wandb_url": null, "checkpoints": [{"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 16500, "path": "ckpt-16500", "is_lora": true, "merged": false}, {"step": 28500, "path": "ckpt-28500", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "evaluated", "registry_method": "LoRA r=32, vel mode", "registry_data": "sub", "registry_eval_score": {"total": 30.4, "trials": 1}, "registry_offline_eval": null, "registry_notes": "Re-evaluated via Docker (ckpt-30000 from HF). Score: 30.4.", "registry_version": "v5", "superseded_by": "v11-lora-r32-sub-delta", "supersedes": null}, {"id": "v6-fullft-full-abs-jointlr", "action_encoding": "absolute", "mode": "full", "num_actions": null, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/0lbxgjwf", "checkpoints": [{"step": 20000, "path": "ckpt-20000", "is_lora": false, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/v6-fullft-full-abs-jointlr", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "batch_size": 1, "learning_rate": 0.0001, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 20000, "freeze_steps": 0, "warmup_steps": 500, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 1000, "log_interval": 20, "seed": 0, "freeze_vlm": false, "vlm_lr": 1e-05, "head_lr": 0.0001}, "best_eval": null, "all_eval_results": [], "training_complete": true, "registry_status": "evaluated", "registry_method": "Full FT, head=1e-4/vlm=1e-5", "registry_data": "full", "registry_eval_score": {"total": 3.0, "trials": 1}, "registry_offline_eval": {"pos_mae_m": 0.017137213490092496, "pos_max_m": null, "ang_mae_deg": 5.062536147327192, "ang_max_deg": null}, "registry_notes": "", "registry_version": "v6", "superseded_by": null, "supersedes": null}, {"id": "v1-lora-full-delta", "action_encoding": "delta", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "trained", "registry_method": "LoRA r=8, lr=5e-4", "registry_data": "full", "registry_eval_score": {"total": 63, "trials": 3, "raw": "63/300 (legacy scoring)"}, "registry_offline_eval": null, "registry_notes": "Moves but doesn't insert.", "registry_version": "v1", "superseded_by": null, "supersedes": null}, {"id": "v11-lora-r32-sub-delta", "action_encoding": "delta", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "trained", "registry_method": "LoRA r=32, pose mode", "registry_data": "sub", "registry_eval_score": null, "registry_offline_eval": null, "registry_notes": "Delta re-run of v5 (30K iters, finished 2026-04-30 22:53 PT). Fix for v5 hover bug. Local-only; W&B run knze0tbj.", "registry_version": "v11", "superseded_by": null, "supersedes": "v5-lora-r32-sub-abs-velmode"}, {"id": "v9-lora-r32-sub-abs-velmode-2stage", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "planned", "registry_method": "LoRA r=32, 2-stage", "registry_data": "sub", "registry_eval_score": null, "registry_offline_eval": null, "registry_notes": "2-stage freeze\u2192full recipe.", "registry_version": "v9", "superseded_by": null, "supersedes": null}]};
-const GENERATED_AT = "2026-05-03T01:24:12.292666+00:00";
+const MODELS_DATA = {"models": [{"id": "v7-lora-full-delta-short8", "action_encoding": "delta", "mode": "peft", "num_actions": 8, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/pp823u8f", "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 12000, "path": "ckpt-12000", "is_lora": true, "merged": false}, {"step": 14000, "path": "ckpt-14000", "is_lora": true, "merged": false}, {"step": 16000, "path": "ckpt-16000", "is_lora": true, "merged": false}, {"step": 18000, "path": "ckpt-18000", "is_lora": true, "merged": false}, {"step": 2000, "path": "ckpt-2000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 22000, "path": "ckpt-22000", "is_lora": true, "merged": false}, {"step": 24000, "path": "ckpt-24000", "is_lora": true, "merged": false}, {"step": 26000, "path": "ckpt-26000", "is_lora": true, "merged": false}, {"step": 28000, "path": "ckpt-28000", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}, {"step": 32000, "path": "ckpt-32000", "is_lora": true, "merged": false}, {"step": 34000, "path": "ckpt-34000", "is_lora": true, "merged": false}, {"step": 36000, "path": "ckpt-36000", "is_lora": true, "merged": false}, {"step": 38000, "path": "ckpt-38000", "is_lora": true, "merged": false}, {"step": 4000, "path": "ckpt-4000", "is_lora": true, "merged": false}, {"step": 40000, "path": "ckpt-40000", "is_lora": true, "merged": false}, {"step": 6000, "path": "ckpt-6000", "is_lora": true, "merged": false}, {"step": 8000, "path": "ckpt-8000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/v7-lora-full-delta-short8", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 2, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 40000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 2000, "log_interval": 20, "seed": 0, "freeze_vlm": false, "num_actions": 8}, "best_eval": {"step": 27000, "pos": 0.0006, "rot": 0.0004}, "all_eval_results": [{"step": 1000, "pos": 0.0221, "rot": 0.0161}, {"step": 2000, "pos": 0.0234, "rot": 0.0054}, {"step": 3000, "pos": 0.0147, "rot": 0.0029}, {"step": 4000, "pos": 0.0077, "rot": 0.0037}, {"step": 5000, "pos": 0.0021, "rot": 0.0071}, {"step": 6000, "pos": 0.0029, "rot": 0.0035}, {"step": 7000, "pos": 0.0123, "rot": 0.0057}, {"step": 8000, "pos": 0.0051, "rot": 0.0025}, {"step": 9000, "pos": 0.0124, "rot": 0.0044}, {"step": 10000, "pos": 0.0048, "rot": 0.0043}, {"step": 11000, "pos": 0.0015, "rot": 0.0058}, {"step": 12000, "pos": 0.0059, "rot": 0.0053}, {"step": 13000, "pos": 0.0033, "rot": 0.0026}, {"step": 14000, "pos": 0.0085, "rot": 0.0039}, {"step": 15000, "pos": 0.0062, "rot": 0.0057}, {"step": 16000, "pos": 0.0024, "rot": 0.0022}, {"step": 17000, "pos": 0.0083, "rot": 0.0023}, {"step": 18000, "pos": 0.0032, "rot": 0.0008}, {"step": 19000, "pos": 0.0055, "rot": 0.0005}, {"step": 20000, "pos": 0.0117, "rot": 0.0015}, {"step": 21000, "pos": 0.0048, "rot": 0.0018}, {"step": 22000, "pos": 0.0037, "rot": 0.0016}, {"step": 23000, "pos": 0.003, "rot": 0.0005}, {"step": 24000, "pos": 0.0021, "rot": 0.0004}, {"step": 25000, "pos": 0.0015, "rot": 0.0005}, {"step": 26000, "pos": 0.0017, "rot": 0.0008}, {"step": 27000, "pos": 0.0006, "rot": 0.0004}, {"step": 28000, "pos": 0.0036, "rot": 0.0001}, {"step": 29000, "pos": 0.0015, "rot": 0.0004}, {"step": 30000, "pos": 0.0014, "rot": 0.0003}, {"step": 31000, "pos": 0.001, "rot": 0.0007}, {"step": 32000, "pos": 0.0014, "rot": 0.0006}, {"step": 33000, "pos": 0.0015, "rot": 0.0004}, {"step": 34000, "pos": 0.0013, "rot": 0.0001}, {"step": 35000, "pos": 0.0017, "rot": 0.0004}, {"step": 36000, "pos": 0.0019, "rot": 0.0002}, {"step": 37000, "pos": 0.0009, "rot": 0.0001}, {"step": 38000, "pos": 0.0008, "rot": 0.0002}, {"step": 39000, "pos": 0.0013, "rot": 0.0001}], "training_complete": true, "registry_status": "evaluated", "registry_method": "LoRA r=8, num_actions=8", "registry_data": "full", "registry_eval_score": {"total": 3.0, "trials": 1}, "registry_offline_eval": {"pos_mae_m": 0.002915996626490875, "pos_max_m": null, "ang_mae_deg": 3.211089193046928, "ang_max_deg": null}, "registry_notes": "Reaches 9cm but collides with task board.", "registry_version": "v7", "superseded_by": null, "supersedes": null}, {"id": "v10-lora-full-abs-continued", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/d4g3uulp", "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 5000, "path": "ckpt-5000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "/home/yifeng/aic_xvla_data/xvla_absolute/ckpt-20000_merged", "output_dir": "/home/yifeng/aic_xvla_data/xvla_absolute_continued", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 2, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 20000, "freeze_steps": 200, "warmup_steps": 50, "use_cosine_decay": false, "min_lr_ratio": 0.1, "save_interval": 5000, "log_interval": 20, "seed": 0}, "best_eval": {"step": 6000, "pos": 0.0041, "rot": 0.0003}, "all_eval_results": [{"step": 1000, "pos": 0.0222, "rot": 0.0017}, {"step": 2000, "pos": 0.0089, "rot": 0.0004}, {"step": 3000, "pos": 0.0251, "rot": 0.0016}, {"step": 4000, "pos": 0.0305, "rot": 0.002}, {"step": 5000, "pos": 0.0593, "rot": 0.001}, {"step": 6000, "pos": 0.0041, "rot": 0.0003}, {"step": 7000, "pos": 0.0163, "rot": 0.0012}, {"step": 8000, "pos": 0.0266, "rot": 0.0009}, {"step": 9000, "pos": 0.0199, "rot": 0.0005}, {"step": 10000, "pos": 0.1576, "rot": 0.0023}, {"step": 11000, "pos": 0.18, "rot": 0.0009}, {"step": 12000, "pos": 0.0522, "rot": 0.0005}, {"step": 13000, "pos": 0.0725, "rot": 0.0011}, {"step": 14000, "pos": 0.0175, "rot": 0.0013}, {"step": 15000, "pos": 0.0064, "rot": 0.001}, {"step": 16000, "pos": 0.0187, "rot": 0.0027}, {"step": 17000, "pos": 0.0085, "rot": 0.0013}, {"step": 18000, "pos": 0.0269, "rot": 0.0004}, {"step": 19000, "pos": 0.007, "rot": 0.0008}], "training_complete": true, "registry_status": "evaluated", "registry_method": "LoRA r=8, continued from v2", "registry_data": "full", "registry_eval_score": {"total": 3.0, "trials": 1}, "registry_offline_eval": {"pos_mae_m": 0.012673321204446766, "pos_max_m": null, "ang_mae_deg": 1.4096080190734295, "ang_max_deg": null}, "registry_notes": "Continued from v2 merged weights.", "registry_version": "v10", "superseded_by": null, "supersedes": null}, {"id": "v8-lora-r32-full-abs-velmode", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/x6bpqpd6", "checkpoints": [{"step": 10500, "path": "ckpt-10500", "is_lora": true, "merged": false}, {"step": 12000, "path": "ckpt-12000", "is_lora": true, "merged": false}, {"step": 13500, "path": "ckpt-13500", "is_lora": true, "merged": false}, {"step": 1500, "path": "ckpt-1500", "is_lora": true, "merged": false}, {"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 16500, "path": "ckpt-16500", "is_lora": true, "merged": false}, {"step": 18000, "path": "ckpt-18000", "is_lora": true, "merged": false}, {"step": 19500, "path": "ckpt-19500", "is_lora": true, "merged": false}, {"step": 21000, "path": "ckpt-21000", "is_lora": true, "merged": false}, {"step": 22500, "path": "ckpt-22500", "is_lora": true, "merged": false}, {"step": 24000, "path": "ckpt-24000", "is_lora": true, "merged": false}, {"step": 25500, "path": "ckpt-25500", "is_lora": true, "merged": false}, {"step": 27000, "path": "ckpt-27000", "is_lora": true, "merged": false}, {"step": 28500, "path": "ckpt-28500", "is_lora": true, "merged": false}, {"step": 3000, "path": "ckpt-3000", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}, {"step": 4500, "path": "ckpt-4500", "is_lora": true, "merged": false}, {"step": 6000, "path": "ckpt-6000", "is_lora": true, "merged": false}, {"step": 7500, "path": "ckpt-7500", "is_lora": true, "merged": false}, {"step": 9000, "path": "ckpt-9000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/v8-lora-r32-full-abs-velmode", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 1, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 30000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 1500, "log_interval": 20, "seed": 0, "freeze_vlm": false, "lora_r": 32, "lora_alpha": 64}, "best_eval": {"step": 21000, "pos": 0.0052, "rot": 0.0005}, "all_eval_results": [{"step": 1000, "pos": 0.5118, "rot": 0.0057}, {"step": 2000, "pos": 0.4405, "rot": 0.0229}, {"step": 3000, "pos": 0.0713, "rot": 0.033}, {"step": 4000, "pos": 1.1026, "rot": 0.0054}, {"step": 5000, "pos": 1.4872, "rot": 0.0029}, {"step": 6000, "pos": 0.2191, "rot": 0.0062}, {"step": 7000, "pos": 0.478, "rot": 0.0174}, {"step": 8000, "pos": 1.431, "rot": 0.0064}, {"step": 9000, "pos": 0.2977, "rot": 0.0055}, {"step": 10000, "pos": 0.0603, "rot": 0.0018}, {"step": 11000, "pos": 0.2271, "rot": 0.0086}, {"step": 12000, "pos": 0.5853, "rot": 0.0055}, {"step": 13000, "pos": 0.1429, "rot": 0.003}, {"step": 14000, "pos": 0.3994, "rot": 0.0016}, {"step": 15000, "pos": 0.0242, "rot": 0.0023}, {"step": 16000, "pos": 0.0321, "rot": 0.0012}, {"step": 17000, "pos": 0.0591, "rot": 0.0013}, {"step": 18000, "pos": 0.0092, "rot": 0.0008}, {"step": 19000, "pos": 0.0093, "rot": 0.0002}, {"step": 20000, "pos": 0.0894, "rot": 0.0005}, {"step": 21000, "pos": 0.0052, "rot": 0.0005}, {"step": 22000, "pos": 0.0084, "rot": 0.0006}, {"step": 23000, "pos": 0.0144, "rot": 0.0005}, {"step": 24000, "pos": 0.0136, "rot": 0.0003}, {"step": 25000, "pos": 0.0091, "rot": 0.0008}, {"step": 26000, "pos": 0.0206, "rot": 0.0002}, {"step": 27000, "pos": 0.0153, "rot": 0.0002}, {"step": 28000, "pos": 0.0181, "rot": 0.0003}, {"step": 29000, "pos": 0.0297, "rot": 0.0009}], "training_complete": true, "registry_status": "evaluated", "registry_method": "LoRA r=32, vel mode", "registry_data": "full", "registry_eval_score": {"total": 20.1, "trials": 1}, "registry_offline_eval": {"pos_mae_m": 0.017557824497583918, "pos_max_m": null, "ang_mae_deg": 2.650929637226466, "ang_max_deg": null}, "registry_notes": "", "registry_version": "v8", "superseded_by": null, "supersedes": null}, {"id": "v3-lora-sub-abs", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/zv6nup3i", "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}, {"step": 40000, "path": "ckpt-40000", "is_lora": true, "merged": false}, {"step": 50000, "path": "ckpt-50000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/xvla_lora_sub", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta_sub2.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta_sub2.json", "eval_interval": 1000, "batch_size": 2, "learning_rate": 0.0005, "learning_coef": 0.1, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 50000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 10000, "log_interval": 20, "seed": 0, "freeze_vlm": false}, "best_eval": {"step": 32000, "pos": 0.0055, "rot": 0.0026}, "all_eval_results": [{"step": 1000, "pos": 0.206, "rot": 0.0066}, {"step": 2000, "pos": 0.3079, "rot": 0.0094}, {"step": 3000, "pos": 0.0252, "rot": 0.002}, {"step": 4000, "pos": 0.1129, "rot": 0.0048}, {"step": 5000, "pos": 0.1807, "rot": 0.0015}, {"step": 6000, "pos": 0.0616, "rot": 0.002}, {"step": 7000, "pos": 0.1053, "rot": 0.0028}, {"step": 8000, "pos": 0.2072, "rot": 0.0018}, {"step": 9000, "pos": 0.0348, "rot": 0.0019}, {"step": 10000, "pos": 0.0559, "rot": 0.0005}, {"step": 11000, "pos": 0.0311, "rot": 0.0024}, {"step": 12000, "pos": 0.2723, "rot": 0.0027}, {"step": 13000, "pos": 0.0723, "rot": 0.0007}, {"step": 14000, "pos": 0.2426, "rot": 0.0015}, {"step": 15000, "pos": 0.1088, "rot": 0.0012}, {"step": 16000, "pos": 0.0402, "rot": 0.0009}, {"step": 17000, "pos": 0.2817, "rot": 0.0034}, {"step": 18000, "pos": 0.0395, "rot": 0.0015}, {"step": 19000, "pos": 0.1126, "rot": 0.0011}, {"step": 20000, "pos": 0.0354, "rot": 0.0019}, {"step": 21000, "pos": 0.0641, "rot": 0.0016}, {"step": 22000, "pos": 0.0549, "rot": 0.0014}, {"step": 23000, "pos": 0.0558, "rot": 0.0004}, {"step": 24000, "pos": 0.0975, "rot": 0.0037}, {"step": 25000, "pos": 0.1057, "rot": 0.0006}, {"step": 26000, "pos": 0.0611, "rot": 0.0029}, {"step": 27000, "pos": 0.0402, "rot": 0.0024}, {"step": 28000, "pos": 0.0466, "rot": 0.0006}, {"step": 29000, "pos": 0.0347, "rot": 0.0035}, {"step": 30000, "pos": 0.0349, "rot": 0.001}, {"step": 31000, "pos": 0.0528, "rot": 0.0008}, {"step": 32000, "pos": 0.0055, "rot": 0.0026}, {"step": 33000, "pos": 0.0077, "rot": 0.0009}, {"step": 34000, "pos": 0.0281, "rot": 0.0025}, {"step": 35000, "pos": 0.0209, "rot": 0.0021}, {"step": 36000, "pos": 0.033, "rot": 0.0011}, {"step": 37000, "pos": 0.0379, "rot": 0.0017}, {"step": 38000, "pos": 0.0348, "rot": 0.0019}, {"step": 39000, "pos": 0.0526, "rot": 0.0011}, {"step": 40000, "pos": 0.0392, "rot": 0.0013}, {"step": 41000, "pos": 0.029, "rot": 0.0008}, {"step": 42000, "pos": 0.046, "rot": 0.0004}, {"step": 43000, "pos": 0.0129, "rot": 0.0008}, {"step": 44000, "pos": 0.0117, "rot": 0.0007}, {"step": 45000, "pos": 0.0299, "rot": 0.0007}, {"step": 46000, "pos": 0.0254, "rot": 0.0004}, {"step": 47000, "pos": 0.0174, "rot": 0.0009}, {"step": 48000, "pos": 0.0112, "rot": 0.0008}, {"step": 49000, "pos": 0.0164, "rot": 0.0005}], "training_complete": true, "registry_status": "evaluated", "registry_method": "LoRA r=8, coef=0.1", "registry_data": "sub", "registry_eval_score": {"total": 15.0, "trials": 3, "successful": 1}, "registry_offline_eval": {"pos_mae_m": 0.016382971577042105, "pos_max_m": null, "ang_mae_deg": 2.9617178687226953, "ang_max_deg": null}, "registry_notes": "Robot stuck.", "registry_version": "v3", "superseded_by": null, "supersedes": null}, {"id": "v2-lora-full-abs", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/xx18ktid", "checkpoints": [{"step": 1000, "path": "ckpt-1000", "is_lora": true, "merged": false}, {"step": 10000, "path": "ckpt-10000", "is_lora": true, "merged": false}, {"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 2000, "path": "ckpt-2000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": true, "merged": false}, {"step": 20000, "path": "ckpt-20000_merged", "is_lora": false, "merged": true}, {"step": 3000, "path": "ckpt-3000", "is_lora": true, "merged": false}, {"step": 5000, "path": "ckpt-5000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/xvla_absolute", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "val_metas_path": "/home/yifeng/aic_xvla_data/val_meta.json", "eval_interval": 1000, "batch_size": 1, "learning_rate": 0.0005, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 3000, "freeze_steps": 0, "warmup_steps": 50, "use_cosine_decay": false, "min_lr_ratio": 0.1, "save_interval": 1000, "log_interval": 20, "seed": 0}, "best_eval": {"step": 16000, "pos": 0.0089, "rot": 0.0008}, "all_eval_results": [{"step": 1000, "pos": 0.0765, "rot": 0.0341}, {"step": 2000, "pos": 0.0868, "rot": 0.0196}, {"step": 1000, "pos": 0.1616, "rot": 0.0409}, {"step": 2000, "pos": 0.0301, "rot": 0.0023}, {"step": 3000, "pos": 0.0222, "rot": 0.0007}, {"step": 4000, "pos": 0.1444, "rot": 0.0032}, {"step": 5000, "pos": 0.0352, "rot": 0.0092}, {"step": 6000, "pos": 0.0138, "rot": 0.0036}, {"step": 7000, "pos": 0.0123, "rot": 0.0003}, {"step": 8000, "pos": 0.0486, "rot": 0.0028}, {"step": 9000, "pos": 0.1041, "rot": 0.0006}, {"step": 10000, "pos": 0.2063, "rot": 0.0059}, {"step": 11000, "pos": 0.2742, "rot": 0.0009}, {"step": 12000, "pos": 0.1172, "rot": 0.0011}, {"step": 13000, "pos": 0.128, "rot": 0.0008}, {"step": 14000, "pos": 0.0122, "rot": 0.0006}, {"step": 15000, "pos": 0.2038, "rot": 0.0039}, {"step": 16000, "pos": 0.0089, "rot": 0.0008}, {"step": 17000, "pos": 0.0153, "rot": 0.0006}, {"step": 18000, "pos": 0.0384, "rot": 0.0045}, {"step": 19000, "pos": 0.0203, "rot": 0.0014}], "training_complete": true, "registry_status": "trained", "registry_method": "LoRA r=8, lr=5e-4", "registry_data": "full", "registry_eval_score": {"total": 63, "trials": 3, "raw": "63/300 (legacy scoring)"}, "registry_offline_eval": {"pos_mae_m": 0.013159141255496618, "pos_max_m": null, "ang_mae_deg": 2.0699921200285907, "ang_max_deg": null}, "registry_notes": "", "registry_version": "v2", "superseded_by": null, "supersedes": null}, {"id": "v4-fullft-full-abs", "action_encoding": "absolute", "mode": "full", "num_actions": null, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/w3zc7sc3", "checkpoints": [{"step": 10000, "path": "ckpt-10000", "is_lora": false, "merged": false}, {"step": 20000, "path": "ckpt-20000", "is_lora": false, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/xvla_full_ft", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "batch_size": 2, "learning_rate": 0.0001, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 100000, "freeze_steps": 1000, "warmup_steps": 2000, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 10000, "log_interval": 20, "seed": 0, "freeze_vlm": true}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "evaluated", "registry_method": "Full FT, frozen VLM", "registry_data": "full", "registry_eval_score": {"total": 3.0, "trials": 1}, "registry_offline_eval": {"pos_mae_m": 0.014644248306401621, "pos_max_m": null, "ang_mae_deg": 3.111748750175023, "ang_max_deg": null}, "registry_notes": "", "registry_version": "v4", "superseded_by": null, "supersedes": null}, {"id": "v5-lora-r32-sub-abs-velmode", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "wandb_url": null, "checkpoints": [{"step": 15000, "path": "ckpt-15000", "is_lora": true, "merged": false}, {"step": 16500, "path": "ckpt-16500", "is_lora": true, "merged": false}, {"step": 28500, "path": "ckpt-28500", "is_lora": true, "merged": false}, {"step": 30000, "path": "ckpt-30000", "is_lora": true, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "evaluated", "registry_method": "LoRA r=32, vel mode", "registry_data": "sub", "registry_eval_score": {"total": 30.4, "trials": 1}, "registry_offline_eval": null, "registry_notes": "Re-evaluated via Docker (ckpt-30000 from HF). Score: 30.4.", "registry_version": "v5", "superseded_by": "v11-lora-r32-sub-delta", "supersedes": null}, {"id": "v6-fullft-full-abs-jointlr", "action_encoding": "absolute", "mode": "full", "num_actions": null, "wandb_url": "https://wandb.ai/wuyifeng51/aic-xvla/runs/0lbxgjwf", "checkpoints": [{"step": 20000, "path": "ckpt-20000", "is_lora": false, "merged": false}], "data": {"train_episodes": 162, "val_episodes": 18}, "hyperparams": {"models": "2toINF/X-VLA-Pt", "output_dir": "/home/yifeng/aic_xvla_data/v6-fullft-full-abs-jointlr", "train_metas_path": "/home/yifeng/aic_xvla_data/train_meta.json", "batch_size": 1, "learning_rate": 0.0001, "learning_coef": 1.0, "weight_decay": 0.0, "betas": "(0.9, 0.95)", "max_grad_norm": 1.0, "iters": 20000, "freeze_steps": 0, "warmup_steps": 500, "use_cosine_decay": true, "min_lr_ratio": 0.05, "save_interval": 1000, "log_interval": 20, "seed": 0, "freeze_vlm": false, "vlm_lr": 1e-05, "head_lr": 0.0001}, "best_eval": null, "all_eval_results": [], "training_complete": true, "registry_status": "evaluated", "registry_method": "Full FT, head=1e-4/vlm=1e-5", "registry_data": "full", "registry_eval_score": {"total": 3.0, "trials": 1}, "registry_offline_eval": {"pos_mae_m": 0.017137213490092496, "pos_max_m": null, "ang_mae_deg": 5.062536147327192, "ang_max_deg": null}, "registry_notes": "", "registry_version": "v6", "superseded_by": null, "supersedes": null}, {"id": "v11-lora-r32-sub-delta", "action_encoding": "delta", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "trained", "registry_method": "LoRA r=32, pose mode", "registry_data": "sub", "registry_eval_score": null, "registry_offline_eval": null, "registry_notes": "Delta re-run of v5 (30K iters, finished 2026-04-30 22:53 PT). Fix for v5 hover bug. Local-only; W&B run knze0tbj.", "registry_version": "v11", "superseded_by": null, "supersedes": "v5-lora-r32-sub-abs-velmode"}, {"id": "v1-lora-full-delta", "action_encoding": "delta", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "evaluated", "registry_method": "LoRA r=8, lr=5e-4", "registry_data": "full", "registry_eval_score": {"total": 38.3, "trials": 1}, "registry_offline_eval": null, "registry_notes": "Best model so far (38.3).", "registry_version": "v1", "superseded_by": null, "supersedes": null}, {"id": "v9-lora-r32-sub-abs-velmode-2stage", "action_encoding": "absolute", "mode": "peft", "num_actions": null, "checkpoints": [], "data": {"train_episodes": null, "val_episodes": null}, "hyperparams": {}, "best_eval": null, "all_eval_results": [], "training_complete": false, "registry_status": "planned", "registry_method": "LoRA r=32, 2-stage", "registry_data": "sub", "registry_eval_score": null, "registry_offline_eval": null, "registry_notes": "2-stage freeze\u2192full recipe.", "registry_version": "v9", "superseded_by": null, "supersedes": null}]};
+const GENERATED_AT = "2026-05-03T01:38:14.161628+00:00";
 
 // ═══ CONSTANTS ═══
 const ENC_COLORS = { absolute: { bg:'rgba(56,189,248,0.85)', border:'#38bdf8', light:'rgba(56,189,248,0.08)' }, delta: { bg:'rgba(52,211,153,0.85)', border:'#34d399', light:'rgba(52,211,153,0.08)' } };
@@ -374,7 +370,7 @@ function rerender() { window._rerenderPending=true;
     const models=getFiltered();
     console.log('filtered models:', models.length);
     renderHero(models); renderTimeline(models); renderTable(models); renderDetails(models);
-    renderCharts(models); renderEvalCurves(models); renderExplorer(models); setTimeout(renderColChips,50);
+    renderLeaderboard(models); renderEvalCurves(models); renderCorrelation(models); setTimeout(renderColChips,50);
     document.getElementById('resultCount').textContent=models.length+' / '+MODELS_DATA.models.length;
   } catch(e) { console.error('rerender error:', e.message, e.stack); }
 }
@@ -663,81 +659,69 @@ ${m.wandb_url?`<a href="${m.wandb_url}" target="_blank" class="text-amber-400 ho
   });
 }
 
-// ═══ ANALYSIS CHARTS ═══
-function renderCharts(models) {
-  Object.values(charts).forEach(c=>{if(c)c.destroy();}); charts={};
+// ═══ LEADERBOARD ═══
+function renderLeaderboard(models) {
+  if(charts.leaderboard) charts.leaderboard.destroy();
+  const ctx=document.getElementById('chartLeaderboard');
+  if(!ctx) return;
 
-  const hasEval=models.filter(m=>m.best_eval);
-  const colorList=['#38bdf8','#34d399','#fbbf24','#a78bfa','#f472b6','#fb923c','#2dd4bf','#a3e635','#c084fc'];
+  const metric=document.getElementById('leaderboardMetric').value;
+  const getVal=m=>{
+    if(metric==='val_loss') return m.best_eval?m.best_eval.pos:null;
+    const v=getOe(m,metric); return (v!=null&&v!==999)?v:null;
+  };
+  const getLabel=(m,val)=>{
+    if(metric==='pos_mae_m') return val!=null?fmtNum(val,4)+'m':'--';
+    if(metric==='ang_mae_deg') return val!=null?fmtNum(val,2)+'°':'--';
+    return val!=null?fmtNum(val):'--';
+  };
+  let pts=models.filter(m=>getVal(m)!=null).map(m=>({x:getVal(m),id:m.id,enc:m.action_encoding,ang:getOe(m,'ang_mae_deg'),pos:getOe(m,'pos_mae_m')})).sort((a,b)=>a.x-b.x);
+  if(!pts.length){ ctx.parentElement.innerHTML='<div class="text-slate-600 text-xs text-center py-12">No offline eval data yet</div>'; return; }
 
-  // Chart 1: Encoding Impact
-  const encCtx=document.getElementById('chartEncoding');
-  if(encCtx){
-    const groups={delta:[],absolute:[]}; hasEval.forEach(m=>{if(groups[m.action_encoding])groups[m.action_encoding].push(m);});
-    const labels=['Absolute','Delta']; const means={absolute:0,delta:0};
-    Object.keys(groups).forEach(k=>{const g=groups[k]; means[k]=g.length?g.reduce((s,m)=>s+m.best_eval.pos,0)/g.length:0;});
-    charts.encoding=new Chart(encCtx,{type:'bar',data:{labels,datasets:[
-      {label:'Pos Loss',data:labels.map(l=>{const g=groups[l==='Absolute'?'absolute':'delta']; return g.length?g.reduce((s,m)=>Math.min(s,m.best_eval.pos),Infinity):null;}),backgroundColor:['rgba(56,189,248,0.7)','rgba(52,211,153,0.7)'],borderRadius:3},
-    ]},options:{
+  const colors=pts.map(p=>p.enc==='delta'?'rgba(52,211,153,0.8)':'rgba(56,189,248,0.8)');
+  const borderColors=pts.map(p=>p.enc==='delta'?'#34d399':'#38bdf8');
+
+  charts.leaderboard=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:pts.map(p=>p.id),
+      datasets:[{
+        data:pts.map(p=>p.x),
+        backgroundColor:colors,
+        borderColor:borderColors,
+        borderWidth:1,
+        borderRadius:3,
+      }]
+    },
+    options:{
+      indexAxis:'y',
       responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'best pos='+ctx.raw}}},
-      scales:{x:{ticks:{color:'#64748b',font:{size:10}},grid:{color:'#1e293b'}},y:{beginAtZero:true,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e293b'},title:{display:true,text:'Pos Loss',color:'#64748b',font:{size:9}}}}
-    }});
-  }
-
-  // Chart 2: Method Impact
-  const metCtx=document.getElementById('chartMethod');
-  if(metCtx){
-    const groups={'LoRA r=8':[],'LoRA r=32':[],'Full FT':[]};
-    hasEval.forEach(m=>{
-      const r=m.hyperparams.lora_r||8; const mode=m.mode;
-      if(mode==='full') groups['Full FT'].push(m);
-      else if(r<=8) groups['LoRA r=8'].push(m);
-      else groups['LoRA r=32'].push(m);
-    });
-    const labels=Object.keys(groups).filter(k=>groups[k].length>0);
-    const colors=['#34d399','#38bdf8','#a78bfa'].slice(0,labels.length);
-    charts.method=new Chart(metCtx,{type:'bar',data:{labels,datasets:[{
-      label:'Best Pos Loss',data:labels.map(l=>groups[l].length?Math.min(...groups[l].map(m=>m.best_eval.pos)):null),
-      backgroundColor:colors,borderRadius:3
-    }]},options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#64748b',font:{size:10}},grid:{color:'#1e293b'}},y:{beginAtZero:true,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e293b'},title:{display:true,text:'Pos Loss',color:'#64748b',font:{size:9}}}}
-    }});
-  }
-
-  // Chart 3: Data Impact
-  const datCtx=document.getElementById('chartData');
-  if(datCtx){
-    const full=hasEval.filter(m=>getDataTag(m)==='full'); const sub=hasEval.filter(m=>getDataTag(m)==='sub');
-    const fullData=full.map(m=>({x:0+Math.random()*0.2-0.1,y:m.best_eval.pos,id:m.id,enc:m.action_encoding}));
-    const subData=sub.map(m=>({x:1+Math.random()*0.2-0.1,y:m.best_eval.pos,id:m.id,enc:m.action_encoding}));
-    charts.data=new Chart(datCtx,{type:'scatter',data:{datasets:[
-      {label:'Full',data:fullData,backgroundColor:'rgba(52,211,153,0.7)',pointRadius:5},
-      {label:'Sub',data:subData,backgroundColor:'rgba(56,189,248,0.7)',pointRadius:5}
-    ]},options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:10},boxWidth:10,padding:8}}},
-      scales:{x:{type:'linear',min:-0.5,max:1.5,ticks:{callback:v=>v<0.5?'Full':'Sub',color:'#64748b',font:{size:10}},grid:{display:false}},
-               y:{beginAtZero:true,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e293b'},title:{display:true,text:'Pos Loss',color:'#64748b',font:{size:9}}}}
-    }});
-  }
-
-  // Chart 4: Training Dynamics
-  const dynCtx=document.getElementById('chartDynamics');
-  if(dynCtx){
-    const pts=hasEval.filter(m=>m.hyperparams.iters).map(m=>({x:m.hyperparams.iters,y:m.best_eval.pos,id:m.id,enc:m.action_encoding,ckts:m.checkpoints.length}));
-    charts.dynamics=new Chart(dynCtx,{type:'scatter',data:{datasets:[{
-      label:'Models',data:pts,backgroundColor:pts.map(p=>p.enc==='delta'?'rgba(52,211,153,0.7)':'rgba(56,189,248,0.7)'),
-      pointRadius:pts.map(p=>Math.min(8,3+p.ckts/5)),pointHoverRadius:8
-    }]},options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const p=pts[ctx.dataIndex]; return p.id+': '+p.y+' ('+p.ckts+' ckpts)';}}}},
-      scales:{x:{title:{display:true,text:'Training Steps',color:'#64748b',font:{size:9}},ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e293b'}},
-              y:{beginAtZero:true,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e293b'},title:{display:true,text:'Pos Loss',color:'#64748b',font:{size:9}}}}
-    }});
-  }
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label:ctx=>{
+              const p=pts[ctx.dataIndex];
+              const lines=[`${p.id}`];
+              if(p.pos!=null&&p.pos!==999) lines.push(`Pos MAE: ${fmtNum(p.pos,4)}m`);
+              if(p.ang!=null&&p.ang!==999) lines.push(`Ang MAE: ${fmtNum(p.ang,2)}°`);
+              return lines;
+            }
+          },
+          backgroundColor:'#1e293b',bodyColor:'#e2e8f0',borderColor:'#334155',borderWidth:1,padding:8,cornerRadius:6,
+        }
+      },
+      scales:{
+        x:{
+          title:{display:true,text:metric==='pos_mae_m'?'Pos MAE (m)':metric==='ang_mae_deg'?'Ang MAE (°)':'Val Loss',color:'#64748b',font:{size:10}},
+          ticks:{color:'#64748b',font:{size:9}},grid:{color:'rgba(51,65,85,0.3)'},beginAtZero:true,
+        },
+        y:{
+          ticks:{color:'#94a3b8',font:{size:10}},grid:{display:false},
+        }
+      },
+    }
+  });
 }
 
 // ═══ EVAL CURVES ═══
@@ -749,15 +733,16 @@ function renderEvalCurves(filteredModels) {
   if(!ctx) return;
   const logScale=document.getElementById('logScale')?.checked;
   const bestOnly=document.getElementById('showBestOnly')?.checked;
+  const showRot=document.getElementById('showRot')?.checked;
   const bestPos=Math.min(...models.filter(m=>m.best_eval).map(m=>m.best_eval.pos),Infinity);
 
   let withEval=models.filter(m=>m.all_eval_results.length>=3);
   if(bestOnly) withEval=withEval.filter(m=>m.best_eval&&m.best_eval.pos===bestPos);
 
   const chartColors=['#38bdf8','#34d399','#fbbf24','#a78bfa','#f472b6','#fb923c','#2dd4bf','#a3e635','#c084fc','#f43f5e','#eab308'];
-  const datasets=withEval.map((m,i)=>{
+  const datasets=withEval.flatMap((m,i)=>{
     const isBest=m.best_eval&&m.best_eval.pos===bestPos;
-    return {
+    const posDs={
       label: m.id, data: m.all_eval_results.map(e=>({x:e.step,y:e.pos})).sort((a,b)=>a.x-b.x),
       backgroundColor: chartColors[i%chartColors.length],
       borderColor: chartColors[i%chartColors.length],
@@ -765,6 +750,17 @@ function renderEvalCurves(filteredModels) {
       borderWidth: isBest?2:1, tension: 0.15, fill: false, showLine: true,
       hidden: !isBest && bestOnly,
     };
+    if(!showRot) return [posDs];
+    const rotDs={
+      label: m.id+' (rot)', data: m.all_eval_results.map(e=>({x:e.step,y:e.rot})).sort((a,b)=>a.x-b.x),
+      backgroundColor: chartColors[i%chartColors.length]+'80',
+      borderColor: chartColors[i%chartColors.length]+'80',
+      borderDash: [4, 3],
+      pointRadius: isBest?2:0.5, pointHoverRadius: 4,
+      borderWidth: isBest?1.5:0.8, tension: 0.15, fill: false, showLine: true,
+      hidden: !isBest && bestOnly,
+    };
+    return [posDs, rotDs];
   });
 
   charts.evalCurves=new Chart(ctx,{type:'scatter',data:{datasets},options:{
@@ -774,41 +770,66 @@ function renderEvalCurves(filteredModels) {
     },
     scales:{
       x:{title:{display:true,text:'Training Steps',color:'#64748b',font:{size:10}}, ticks:{color:'#64748b',font:{size:9}}, grid:{color:'#1e293b'}},
-      y:{type:logScale?'logarithmic':'linear', title:{display:true,text:'Pos Loss',color:'#64748b',font:{size:10}}, ticks:{color:'#64748b',font:{size:9}}, grid:{color:'#1e293b'}, min:logScale?0.0001:0}
+      y:{type:logScale?'logarithmic':'linear', title:{display:true,text:showRot?'Pos / Rot Loss':'Pos Loss',color:'#64748b',font:{size:10}}, ticks:{color:'#64748b',font:{size:9}}, grid:{color:'#1e293b'}, min:logScale?0.0001:0}
     },
     interaction:{mode:'index',intersect:false},
     hover:{mode:'index',intersect:false}
   }});
 }
 
-// ═══ EXPLORER ═══
-function renderExplorer(models) {
-  if(charts.explorer) charts.explorer.destroy();
-  const ctx=document.getElementById('chartExplorer');
-  if(!ctx) return;
-  const xKey=document.getElementById('explorerX')?.value||'iters';
-  const logX=document.getElementById('explorerLogX')?.checked;
-  const pts=models.filter(m=>m.best_eval).map(m=>{
-    const hp=m.hyperparams;
-    let xVal=null;
-    if(xKey==='learning_rate') xVal=hp.learning_rate;
-    else if(xKey==='batch_size') xVal=hp.batch_size;
-    else if(xKey==='num_actions') xVal=hp.num_actions;
-    else xVal=hp[xKey];
-    return xVal!=null?{x:xVal,y:m.best_eval.pos,id:m.id,enc:m.action_encoding}:null;
-  }).filter(p=>p!=null).sort((a,b)=>a.x-b.x);
-  if(!pts.length){ ctx.parentElement.innerHTML='<div class="text-slate-600 text-xs text-center py-8">No data for this parameter</div>'; return; }
-  const trendN=pts.length>2?pts.length:0;
-  const trendLine=trendN?{label:'trend',data:pts,type:'line',borderColor:'rgba(148,163,184,0.3)',borderWidth:1,pointRadius:0,tension:0.3,fill:false,showLine:true}:null;
-  charts.explorer=new Chart(ctx,{type:'scatter',data:{datasets:[
-    {label:'Models',data:pts,backgroundColor:pts.map(p=>p.enc==='delta'?'rgba(52,211,153,0.7)':'rgba(56,189,248,0.7)'),pointRadius:5,pointHoverRadius:7},
-    ...(trendLine?[trendLine]:[]),
-  ]},options:{
-    responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const p=pts[ctx.dataIndex]; return p.id+': pos='+p.y;}}}},
-    scales:{x:{type:logX?'logarithmic':'linear',title:{display:true,text:xKey,color:'#64748b',font:{size:10}},ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e293b'}},
-             y:{beginAtZero:true,title:{display:true,text:'Pos Loss',color:'#64748b',font:{size:10}},ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e293b'}}}
-  }});
+// ═══ CORRELATION ═══
+function renderCorrelation(models) {
+  // Steps vs Pos MAE
+  const stepCtx=document.getElementById('chartCorrSteps');
+  if(stepCtx){
+    if(charts.corrSteps) charts.corrSteps.destroy();
+    const pts=models.filter(m=>m.hyperparams.iters&&getOe(m,'pos_mae_m')!=null&&getOe(m,'pos_mae_m')!==999)
+      .map(m=>({x:m.hyperparams.iters,y:getOe(m,'pos_mae_m'),id:m.id,enc:m.action_encoding,ang:getOe(m,'ang_mae_deg')}))
+      .sort((a,b)=>a.x-b.x);
+    if(pts.length){
+      charts.corrSteps=new Chart(stepCtx,{type:'scatter',data:{datasets:[{
+        label:'Models',data:pts,
+        backgroundColor:pts.map(p=>p.enc==='delta'?'rgba(52,211,153,0.7)':'rgba(56,189,248,0.7)'),
+        pointRadius:5,pointHoverRadius:7,
+      }]},options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{
+          const p=pts[ctx.dataIndex]; return [p.id,`Pos MAE: ${fmtNum(p.y,4)}m`,`Ang MAE: ${p.ang!=null?fmtNum(p.ang,2)+'°':'--'}`];
+        }}},backgroundColor:'#1e293b',bodyColor:'#e2e8f0',borderColor:'#334155',borderWidth:1,padding:8,cornerRadius:6,},
+        scales:{
+          x:{title:{display:true,text:'Training Steps',color:'#64748b',font:{size:10}},ticks:{color:'#64748b',font:{size:9}},grid:{color:'rgba(51,65,85,0.3)'}},
+          y:{title:{display:true,text:'Pos MAE (m)',color:'#64748b',font:{size:10}},ticks:{color:'#64748b',font:{size:9}},grid:{color:'rgba(51,65,85,0.3)'},beginAtZero:true},
+        },
+      }});
+    } else { stepCtx.parentElement.innerHTML='<div class="text-slate-600 text-xs text-center py-10">No data</div>'; }
+  }
+
+  // Data size vs Pos MAE
+  const dataCtx=document.getElementById('chartCorrData');
+  if(dataCtx){
+    if(charts.corrData) charts.corrData.destroy();
+    let pts=models.filter(m=>getOe(m,'pos_mae_m')!=null&&getOe(m,'pos_mae_m')!==999)
+      .map(m=>{
+        const ds=m.registry_data||(m.hyperparams.train_metas_path?('full'):null);
+        return {x:ds==='full'?270000:ds==='sub'?103000:0,y:getOe(m,'pos_mae_m'),id:m.id,enc:m.action_encoding,ang:getOe(m,'ang_mae_deg'),ds};
+      }).filter(p=>p.x>0).sort((a,b)=>a.x-b.x);
+    if(pts.length){
+      charts.corrData=new Chart(dataCtx,{type:'scatter',data:{datasets:[{
+        label:'Models',data:pts,
+        backgroundColor:pts.map(p=>p.enc==='delta'?'rgba(52,211,153,0.7)':'rgba(56,189,248,0.7)'),
+        pointRadius:5,pointHoverRadius:7,
+      }]},options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{
+          const p=pts[ctx.dataIndex]; return [p.id,`${p.ds} (${(p.x/1000).toFixed(0)}K)`,`Pos MAE: ${fmtNum(p.y,4)}m`,`Ang MAE: ${p.ang!=null?fmtNum(p.ang,2)+'°':'--'}`];
+        }}},backgroundColor:'#1e293b',bodyColor:'#e2e8f0',borderColor:'#334155',borderWidth:1,padding:8,cornerRadius:6,},
+        scales:{
+          x:{title:{display:true,text:'Data Samples',color:'#64748b',font:{size:10}},ticks:{color:'#64748b',font:{size:9},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'rgba(51,65,85,0.3)'}},
+          y:{title:{display:true,text:'Pos MAE (m)',color:'#64748b',font:{size:10}},ticks:{color:'#64748b',font:{size:9}},grid:{color:'rgba(51,65,85,0.3)'},beginAtZero:true},
+        },
+      }});
+    } else { dataCtx.parentElement.innerHTML='<div class="text-slate-600 text-xs text-center py-10">No data</div>'; }
+  }
 }
 
 // ═══ EVENT HANDLERS ═══
@@ -824,8 +845,7 @@ document.getElementById('searchInput').addEventListener('input',()=>{
   state.filters.search=document.getElementById('searchInput').value.toLowerCase();
   rerender();
 });
-document.getElementById('explorerX')?.addEventListener('change',()=>rerender());
-document.getElementById('explorerLogX')?.addEventListener('change',()=>rerender());
+
 
 
 function toggleColMenu() {
