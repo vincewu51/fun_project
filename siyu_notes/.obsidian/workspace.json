@@ -1,0 +1,217 @@
+{
+  "main": {
+    "id": "2fe4e621c2f971f8",
+    "type": "split",
+    "children": [
+      {
+        "id": "5ccad89be9082167",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c1c07c8a8ed53ee9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "data_improvement_methods.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "data_improvement_methods"
+            }
+          },
+          {
+            "id": "6799c68398337959",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "data_improvement_methods.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "data_improvement_methods"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "013ddb6a5af56849",
+    "type": "split",
+    "children": [
+      {
+        "id": "fdb87939a8931976",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7240de60c0176319",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "e81337506bde0bdd",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "de94f16b686a4a20",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "c23f237a783aa2fc",
+    "type": "split",
+    "children": [
+      {
+        "id": "50c62c94cd96fd6b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "205c331ce4f77e71",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "data_improvement_methods.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for data_improvement_methods"
+            }
+          },
+          {
+            "id": "e4f211efd0a2a117",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "data_improvement_methods.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from data_improvement_methods"
+            }
+          },
+          {
+            "id": "c98b4706e96c4317",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "823a7bd652d87da2",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "5f4b6ff856e29f63",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "data_improvement_methods.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of data_improvement_methods"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "6799c68398337959",
+  "lastOpenFiles": [
+    "data_improvement_methods.md.tmp.2479633.1777953409411",
+    "data_improvement_methods.md.tmp.2479633.1777953401465",
+    "data_improvement_methods.md.tmp.2479633.1777953398066",
+    "data_improvement_methods.md.tmp.2479633.1777953394214",
+    "data_improvement_methods.md.tmp.2479633.1777953390809",
+    "data_improvement_methods.md.tmp.2479633.1777953387018",
+    "data_improvement_methods.md.tmp.2479633.1777953383328",
+    "data_improvement_methods.md.tmp.2479633.1777953379977",
+    "data_improvement_methods.md",
+    "data_improvement_methods.md.tmp.2479633.1777953375777",
+    "data_improvement_methods.md.tmp.2479633.1777953368320",
+    "data_improvement_methods.md.tmp.2479633.1777953359571",
+    "aic_competition_summary.md"
+  ]
+}
